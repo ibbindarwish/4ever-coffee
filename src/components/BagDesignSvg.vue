@@ -131,22 +131,23 @@ const fs = computed(() => ({
     <!-- scale transform keeps logo centered at (130, 215)            -->
     <!-- ══════════════════════════════════════════════════════════════ -->
     <g v-if="isFront"
-       :transform="`translate(130,215) scale(${fs.logoScale}) translate(-130,-215)`">
-      <circle cx="130" cy="215" r="32" :fill="logoColor" opacity="0.05"/>
-      <circle cx="130" cy="215" r="26"
-              fill="rgba(0,0,0,0.18)" :stroke="logoColor" stroke-width="2.2"
-              :filter="`url(#${uid('glow')})`" opacity="0.85"/>
-      <circle cx="130" cy="215" r="21"
-              fill="none" :stroke="logoColor" stroke-width="0.7" opacity="0.35"/>
-      <line x1="137" y1="197" x2="112" y2="223"
-            :stroke="logoColor" :stroke-width="fs.logoStroke" stroke-linecap="round"/>
-      <line x1="111" y1="223" x2="148" y2="223"
-            :stroke="logoColor" :stroke-width="fs.logoStroke" stroke-linecap="round"/>
-      <line x1="137" y1="197" x2="137" y2="237"
-            :stroke="logoColor" :stroke-width="fs.logoStroke" stroke-linecap="round"/>
-      <ellipse cx="122" cy="234" rx="3.5" ry="5.5"
-               :fill="logoColor" opacity="0.18"
-               transform="rotate(-30 122 234)"/>
+       :transform="`translate(130,220) scale(${fs.logoScale}) translate(-130,-220)`">
+      <!-- Outer ambient glow -->
+      <circle cx="130" cy="220" r="62" :fill="logoColor" opacity="0.04"/>
+      <!-- Badge ring -->
+      <circle cx="130" cy="220" r="52"
+              fill="rgba(0,0,0,0.22)" :stroke="logoColor" stroke-width="3"
+              :filter="`url(#${uid('glow')})`" opacity="0.9"/>
+      <!-- Inner double ring -->
+      <circle cx="130" cy="220" r="44"
+              fill="none" :stroke="logoColor" stroke-width="0.9" opacity="0.35"/>
+      <!-- "4" lettermark — scaled to fit r=52 badge -->
+      <line x1="142" y1="190" x2="100" y2="232"
+            :stroke="logoColor" :stroke-width="fs.logoStroke * 1.6" stroke-linecap="round"/>
+      <line x1="99"  y1="232" x2="162" y2="232"
+            :stroke="logoColor" :stroke-width="fs.logoStroke * 1.6" stroke-linecap="round"/>
+      <line x1="142" y1="190" x2="142" y2="254"
+            :stroke="logoColor" :stroke-width="fs.logoStroke * 1.6" stroke-linecap="round"/>
     </g>
 
     <!-- ══════════════════════════════════════════════════════════════ -->
