@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import { useCartStore } from '../../stores/cart'
+import { useCartStore, SIZE_NAME } from '../../stores/cart'
 
 const cart = useCartStore()
 </script>
@@ -19,24 +19,27 @@ const cart = useCartStore()
 
       <div v-else class="cart-layout">
         <div class="cart-items">
-          <div v-for="item in cart.items" :key="item.product.id" class="cart-row">
+          <div v-for="item in cart.items" :key="`${item.product.id}-${item.size}`" class="cart-row">
             <div class="cart-img">
               <div class="cart-img-bg" :style="{ background: item.product.gradient }"></div>
               <img :src="item.product.image" :alt="item.product.name" class="cart-photo"
-                   @error="(e) => (e.target as HTMLImageElement).style.display='none'"/>
+                   @error="() => {}"/>
             </div>
             <div class="cart-info">
               <div class="cart-cat">{{ item.product.category }}</div>
               <div class="cart-name">{{ item.product.name }}</div>
-              <div class="cart-scent">{{ item.product.scentType }}</div>
+              <div class="cart-meta">
+                <span class="size-badge">{{ SIZE_NAME[item.size] }}</span>
+                <span class="cart-scent">{{ item.product.scentType }}</span>
+              </div>
             </div>
             <div class="cart-qty">
-              <button @click="cart.setQty(item.product.id, item.qty - 1)">−</button>
+              <button @click="cart.setQty(item.product.id, item.size, item.qty - 1)">−</button>
               <span>{{ item.qty }}</span>
-              <button @click="cart.setQty(item.product.id, item.qty + 1)">+</button>
+              <button @click="cart.setQty(item.product.id, item.size, item.qty + 1)">+</button>
             </div>
-            <div class="cart-line-price">£{{ (item.product.price * item.qty).toFixed(2) }}</div>
-            <button class="cart-remove" @click="cart.removeFromCart(item.product.id)" title="Remove">✕</button>
+            <div class="cart-line-price">£{{ cart.effectivePrice(item).toFixed(2) }} ea</div>
+            <button class="cart-remove" @click="cart.removeFromCart(item.product.id, item.size)" title="Remove">✕</button>
           </div>
         </div>
 
@@ -85,6 +88,8 @@ const cart = useCartStore()
 .cart-info { flex: 1; min-width: 0; }
 .cart-cat  { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #c8813a; margin-bottom: 2px; }
 .cart-name { font-size: 15px; font-weight: 700; color: #1c1917; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cart-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+.size-badge { font-size: 10px; font-weight: 800; background: #1c1917; color: #d4a060; border-radius: 5px; padding: 2px 7px; letter-spacing: 0.04em; flex-shrink: 0; }
 .cart-scent { font-size: 12px; color: #a8a29e; }
 
 .cart-qty { display: flex; align-items: center; gap: 10px; }
@@ -92,7 +97,7 @@ const cart = useCartStore()
 .cart-qty button:hover { background: #fdf3e7; border-color: #d4a060; color: #92400e; }
 .cart-qty span { font-size: 15px; font-weight: 700; color: #1c1917; width: 24px; text-align: center; }
 
-.cart-line-price { font-size: 16px; font-weight: 800; color: #1c1917; min-width: 64px; text-align: right; }
+.cart-line-price { font-size: 13px; font-weight: 700; color: #57534e; min-width: 68px; text-align: right; white-space: nowrap; }
 .cart-remove { background: none; border: none; font-size: 14px; color: #d1c9c2; cursor: pointer; padding: 6px; border-radius: 6px; transition: all 0.15s; }
 .cart-remove:hover { color: #ef4444; background: #fee2e2; }
 

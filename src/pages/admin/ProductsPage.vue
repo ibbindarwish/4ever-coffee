@@ -79,7 +79,7 @@ function stockColor(p: MenuItem) {
         <div class="item-img">
           <div class="item-img-bg" :style="{ background: p.gradient }"></div>
           <img :src="p.image" :alt="p.name" class="item-photo"
-               @error="(e) => (e.target as HTMLImageElement).style.display='none'"/>
+               @error="() => {}"/>
           <div class="item-cat-badge">{{ p.category }}</div>
         </div>
         <div class="item-body">

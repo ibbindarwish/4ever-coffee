@@ -1,12 +1,20 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useProductsStore } from '../stores/products'
 import { useOrdersStore } from '../stores/orders'
+import { useAuthStore } from '../stores/auth'
 import AppLogo from './AppLogo.vue'
+
+defineProps<{ mobileOpen?: boolean }>()
+defineEmits<{ close: [] }>()
 
 const route = useRoute()
 const products = useProductsStore()
 const orders = useOrdersStore()
+const auth = useAuthStore()
+
+const isAdmin = computed(() => auth.user?.role === 'Admin')
 
 function isActive(path: string) {
   return route.path === path || route.path.startsWith(path + '/')
@@ -14,7 +22,7 @@ function isActive(path: string) {
 </script>
 
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" :class="{ 'sidebar--open': mobileOpen }">
     <div class="brand">
       <AppLogo :size="38" />
       <div class="brand-text">
@@ -28,9 +36,7 @@ function isActive(path: string) {
       <RouterLink to="/"          class="nav-link" :class="{ active: route.path === '/' }">
         <span class="nav-icon">⊞</span> Dashboard
       </RouterLink>
-      <RouterLink to="/analytics" class="nav-link" :class="{ active: isActive('/analytics') }">
-        <span class="nav-icon">📊</span> Analytics
-      </RouterLink>
+
 
       <div class="nav-section">Store</div>
       <RouterLink to="/menu"   class="nav-link" :class="{ active: isActive('/menu') }">
@@ -46,16 +52,35 @@ function isActive(path: string) {
         </span>
       </RouterLink>
 
+      <RouterLink to="/roastery-admin" class="nav-link" :class="{ active: isActive('/roastery-admin') }">
+        <span class="nav-icon">🏭</span> Roastery
+      </RouterLink>
       <RouterLink to="/architector" class="nav-link" :class="{ active: isActive('/architector') }">
         <span class="nav-icon">⬡</span> Architector
       </RouterLink>
       <RouterLink to="/cups-daily" class="nav-link" :class="{ active: isActive('/cups-daily') }">
         <span class="nav-icon">☕</span> Cup Tracker
       </RouterLink>
+      <RouterLink to="/cup-showcase" class="nav-link" :class="{ active: isActive('/cup-showcase') }">
+        <span class="nav-icon">🥤</span> Cup Design
+      </RouterLink>
+      <RouterLink to="/cup-designer" class="nav-link" :class="{ active: isActive('/cup-designer') }">
+        <span class="nav-icon">🖌️</span> Cup Designer
+      </RouterLink>
+      <RouterLink to="/packaging-designer" class="nav-link" :class="{ active: isActive('/packaging-designer') }">
+        <span class="nav-icon">📦</span> Packaging
+      </RouterLink>
 
       <div class="nav-section">Manage</div>
       <RouterLink to="/users"    class="nav-link" :class="{ active: isActive('/users') }">
         <span class="nav-icon">👥</span> Team
+      </RouterLink>
+      <RouterLink to="/schedule" class="nav-link" :class="{ active: isActive('/schedule') }">
+        <span class="nav-icon">📅</span> Schedule
+      </RouterLink>
+      <RouterLink v-if="isAdmin" to="/promo-codes" class="nav-link" :class="{ active: isActive('/promo-codes') }">
+        <span class="nav-icon">🏷</span> Promo Codes
+        <span class="nav-badge admin-only">Admin</span>
       </RouterLink>
       <RouterLink to="/settings" class="nav-link" :class="{ active: isActive('/settings') }">
         <span class="nav-icon">⚙</span> Settings
@@ -76,6 +101,16 @@ function isActive(path: string) {
   background: #1a0a04; height: 100vh; position: sticky; top: 0;
   display: flex; flex-direction: column;
   border-right: 1px solid rgba(255,255,255,0.06);
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; left: 0; top: 0; z-index: 200;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+  }
+  .sidebar--open { transform: translateX(0); }
 }
 
 .brand {
@@ -100,8 +135,9 @@ function isActive(path: string) {
 .nav-link.active { background: rgba(212,160,96,0.15); color: #d4a060; font-weight: 600; }
 .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
 .nav-badge { margin-left: auto; border-radius: 10px; font-size: 10px; font-weight: 700; padding: 2px 7px; }
-.nav-badge.warn { background: #7c2d12; color: #fed7aa; }
-.nav-badge.blue { background: #1e3a5f; color: #93c5fd; }
+.nav-badge.warn       { background: #7c2d12; color: #fed7aa; }
+.nav-badge.blue       { background: #1e3a5f; color: #93c5fd; }
+.nav-badge.admin-only { background: rgba(212,160,96,0.18); color: #d4a060; }
 
 .sidebar-footer {
   padding: 14px 18px;

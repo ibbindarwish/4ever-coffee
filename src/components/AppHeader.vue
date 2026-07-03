@@ -3,11 +3,15 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useOrdersStore } from '../stores/orders'
+import { useThemeStore } from '../stores/theme'
+
+const emit = defineEmits<{ 'toggle-sidebar': [] }>()
 
 const route  = useRoute()
 const router = useRouter()
 const auth   = useAuthStore()
 const orders = useOrdersStore()
+const theme  = useThemeStore()
 
 const breadcrumb: Record<string, string> = {
   '/': 'Dashboard', '/analytics': 'Analytics', '/users': 'Team',
@@ -55,6 +59,10 @@ const statusColor: Record<string, string> = {
 <template>
   <header class="app-header">
     <div class="header-left">
+      <!-- Mobile hamburger -->
+      <button class="burger-btn" @click="emit('toggle-sidebar')" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
       <div class="page-title">{{ title }}</div>
     </div>
 
@@ -66,6 +74,19 @@ const statusColor: Record<string, string> = {
         </svg>
         <input placeholder="Search..." class="search-input"/>
       </div>
+
+      <!-- Dark mode toggle -->
+      <button class="icon-btn dark-btn" @click="theme.toggle()" :title="theme.dark ? 'Light mode' : 'Dark mode'">
+        <svg v-if="theme.dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
 
       <!-- Notification bell -->
       <div class="notif-wrap">
@@ -132,25 +153,25 @@ const statusColor: Record<string, string> = {
 <style scoped>
 .app-header {
   height: 60px; display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px; background: #fff; border-bottom: 1px solid #f0ebe4; flex-shrink: 0;
-  position: relative; z-index: 50;
+  padding: 0 28px; background: var(--fc-surface); border-bottom: 1px solid var(--fc-border); flex-shrink: 0;
+  position: relative; z-index: 50; transition: background 0.2s, border-color 0.2s;
 }
-.page-title   { font-size: 17px; font-weight: 700; color: #1c1917; }
+.page-title   { font-size: 17px; font-weight: 700; color: var(--fc-text); transition: color 0.2s; }
 .header-right { display: flex; align-items: center; gap: 10px; }
 
-.search-wrap  { display: flex; align-items: center; gap: 8px; background: #faf7f2; border: 1px solid #e7e5e4; border-radius: 8px; padding: 6px 12px; }
-.search-wrap svg { width: 14px; height: 14px; color: #a8a29e; }
-.search-input { border: none; background: none; outline: none; font-size: 13px; color: #1c1917; width: 160px; }
-.search-input::placeholder { color: #a8a29e; }
+.search-wrap  { display: flex; align-items: center; gap: 8px; background: var(--fc-surface-2); border: 1px solid var(--fc-border-2); border-radius: 8px; padding: 6px 12px; transition: background 0.2s, border-color 0.2s; }
+.search-wrap svg { width: 14px; height: 14px; color: var(--fc-text-muted); }
+.search-input { border: none; background: none; outline: none; font-size: 13px; color: var(--fc-text); width: 160px; transition: color 0.2s; }
+.search-input::placeholder { color: var(--fc-text-muted); }
 
 /* Notification bell */
 .notif-wrap { position: relative; }
 .icon-btn {
-  width: 36px; height: 36px; border: 1px solid #e7e5e4; border-radius: 8px;
-  background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  color: #78716c; transition: all 0.15s; position: relative;
+  width: 36px; height: 36px; border: 1px solid var(--fc-border-2); border-radius: 8px;
+  background: var(--fc-surface); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--fc-text-muted); transition: all 0.15s; position: relative;
 }
-.icon-btn:hover { background: #faf7f2; }
+.icon-btn:hover { background: var(--fc-surface-2); }
 .icon-btn svg { width: 16px; height: 16px; }
 .icon-btn.has { border-color: #fcd34d; background: #fffbf5; color: #d97706; }
 
@@ -175,14 +196,14 @@ const statusColor: Record<string, string> = {
 /* Dropdown panel */
 .notif-panel {
   position: absolute; top: calc(100% + 10px); right: 0;
-  width: 320px; background: #fff;
-  border: 1px solid #f0ebe4; border-radius: 16px;
-  box-shadow: 0 16px 48px rgba(44,16,8,0.14);
+  width: 320px; background: var(--fc-surface);
+  border: 1px solid var(--fc-border); border-radius: 16px;
+  box-shadow: 0 16px 48px var(--fc-shadow);
   overflow: hidden;
 }
 
-.np-head   { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 12px; border-bottom: 1px solid #f5f0ea; }
-.np-title  { font-size: 13px; font-weight: 700; color: #1c1917; }
+.np-head   { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 12px; border-bottom: 1px solid var(--fc-border); }
+.np-title  { font-size: 13px; font-weight: 700; color: var(--fc-text); }
 .np-clear  { font-size: 11px; color: #d4a060; font-weight: 600; background: none; border: none; cursor: pointer; }
 .np-clear:hover { color: #c8813a; }
 
@@ -191,29 +212,47 @@ const statusColor: Record<string, string> = {
 .np-empty p    { font-size: 13px; color: #a8a29e; margin: 0; }
 
 .np-list   { max-height: 260px; overflow-y: auto; }
-.np-item   { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #faf7f2; transition: background 0.12s; }
-.np-item:hover { background: #faf7f2; }
+.np-item   { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--fc-border); transition: background 0.12s; }
+.np-item:hover { background: var(--fc-surface-2); }
 .np-dot    { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .np-info   { flex: 1; min-width: 0; }
-.np-name   { font-size: 13px; font-weight: 600; color: #1c1917; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.np-sub    { font-size: 11px; color: #a8a29e; margin-top: 1px; }
+.np-name   { font-size: 13px; font-weight: 600; color: var(--fc-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-sub    { font-size: 11px; color: var(--fc-text-muted); margin-top: 1px; }
 .np-status { font-size: 11px; font-weight: 600; text-transform: capitalize; white-space: nowrap; }
 
-.np-footer { width: 100%; padding: 12px 16px; background: #faf7f2; border: none; border-top: 1px solid #f0ebe4; font-size: 13px; font-weight: 600; color: #d4a060; cursor: pointer; text-align: left; transition: background 0.15s; }
-.np-footer:hover { background: #fdf3e7; }
+.np-footer { width: 100%; padding: 12px 16px; background: var(--fc-surface-2); border: none; border-top: 1px solid var(--fc-border); font-size: 13px; font-weight: 600; color: #d4a060; cursor: pointer; text-align: left; transition: background 0.15s; }
+.np-footer:hover { background: var(--fc-surface-3); }
 
 /* Panel animation */
 .notif-enter-active, .notif-leave-active { transition: all 0.2s ease; }
 .notif-enter-from, .notif-leave-to       { opacity: 0; transform: translateY(-8px) scale(0.97); }
 
 /* User chip */
-.user-chip { display: flex; align-items: center; gap: 8px; background: #faf7f2; border: 1px solid #e7e5e4; border-radius: 8px; padding: 5px 12px 5px 6px; cursor: default; }
+.user-chip { display: flex; align-items: center; gap: 8px; background: var(--fc-surface-2); border: 1px solid var(--fc-border-2); border-radius: 8px; padding: 5px 12px 5px 6px; cursor: default; transition: background 0.2s, border-color 0.2s; }
 .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: #d4a060; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .user-info   { display: flex; flex-direction: column; }
-.user-name   { font-size: 13px; font-weight: 600; color: #1c1917; line-height: 1.2; }
-.user-role   { font-size: 10px; color: #a8a29e; line-height: 1.2; }
+.user-name   { font-size: 13px; font-weight: 600; color: var(--fc-text); line-height: 1.2; transition: color 0.2s; }
+.user-role   { font-size: 10px; color: var(--fc-text-muted); line-height: 1.2; }
 
-.logout-btn { width: 34px; height: 34px; border: 1px solid #e7e5e4; border-radius: 8px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #a8a29e; transition: all 0.15s; }
+.logout-btn { width: 34px; height: 34px; border: 1px solid var(--fc-border-2); border-radius: 8px; background: var(--fc-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--fc-text-muted); transition: all 0.15s; }
 .logout-btn:hover { background: #fef2f2; border-color: #fecaca; color: #ef4444; }
 .logout-btn svg { width: 15px; height: 15px; }
+
+.dark-btn svg { width: 16px; height: 16px; }
+.dark-btn:hover { background: #1c1917; color: #d4a060; border-color: #1c1917; }
+
+/* Mobile hamburger */
+.burger-btn {
+  display: none; width: 36px; height: 36px;
+  border: 1px solid var(--fc-border-2); border-radius: 8px;
+  background: var(--fc-surface); cursor: pointer;
+  flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 0;
+}
+.burger-btn span { display: block; width: 18px; height: 2px; background: var(--fc-text-2); border-radius: 2px; }
+
+@media (max-width: 768px) {
+  .burger-btn { display: flex; }
+  .search-wrap { display: none; }
+  .app-header { padding: 0 16px; }
+}
 </style>

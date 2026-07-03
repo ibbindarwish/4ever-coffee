@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useProductsStore } from '../../stores/products'
-import { useCartStore } from '../../stores/cart'
+import { useCartStore, SIZE_PRICE, type CupSize } from '../../stores/cart'
+import ProductReviews from '../../components/shop/ProductReviews.vue'
 
 const store = useProductsStore()
 const cart = useCartStore()
@@ -10,7 +11,21 @@ const search   = ref('')
 const category = ref('All')
 const sort     = ref('popular')
 const cats     = ['All', 'Hot Coffee', 'Cold Coffee', 'Specialty', 'Sweets & Cakes']
-const added    = ref<Set<number>>(new Set())
+const added    = ref<Set<string>>(new Set())
+const selectedSize = ref<Record<number, CupSize>>({})
+
+const SIZE_OPTIONS: { key: CupSize; label: string; diff: number }[] = [
+  { key: 'small',  label: 'S', diff: SIZE_PRICE.small  },
+  { key: 'medium', label: 'M', diff: SIZE_PRICE.medium },
+  { key: 'large',  label: 'L', diff: SIZE_PRICE.large  },
+]
+
+function getSize(id: number): CupSize {
+  return selectedSize.value[id] ?? 'medium'
+}
+function setSize(id: number, size: CupSize) {
+  selectedSize.value[id] = size
+}
 
 const filtered = computed(() => {
   let list = store.products
@@ -28,11 +43,26 @@ function pctOff(p: typeof store.products[0]) {
   return p.originalPrice ? Math.round((1 - p.price / p.originalPrice) * 100) : 0
 }
 
-function addToCart(p: typeof store.products[0]) {
-  cart.addToCart(p)
-  added.value.add(p.id)
-  setTimeout(() => added.value.delete(p.id), 1400)
+function effectivePrice(p: typeof store.products[0]): number {
+  return p.price + SIZE_PRICE[getSize(p.id)]
 }
+
+function addToCart(p: typeof store.products[0]) {
+  const size = getSize(p.id)
+  cart.addToCart(p, size)
+  const key = `${p.id}-${size}`
+  added.value.add(key)
+  setTimeout(() => added.value.delete(key), 1400)
+}
+
+function wasAdded(p: typeof store.products[0]) {
+  return added.value.has(`${p.id}-${getSize(p.id)}`)
+}
+
+type Product = typeof store.products[0]
+const detailProduct = ref<Product | null>(null)
+function openDetail(p: Product) { detailProduct.value = p }
+function closeDetail() { detailProduct.value = null }
 </script>
 
 <template>
@@ -94,7 +124,7 @@ function addToCart(p: typeof store.products[0]) {
               :src="p.image"
               :alt="p.name"
               class="card-photo"
-              @error="(e) => (e.target as HTMLImageElement).style.display='none'"
+              @error="() => {}"
             />
             <div class="card-img-fade"></div>
 
@@ -117,7 +147,7 @@ function addToCart(p: typeof store.products[0]) {
 
             <!-- Name + rating row -->
             <div class="card-top">
-              <h3 class="card-name">{{ p.name }}</h3>
+              <h3 class="card-name link-name" @click.stop="openDetail(p)">{{ p.name }}</h3>
               <div class="card-rating">
                 <svg viewBox="0 0 20 20" fill="#f59e0b" width="13" height="13"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                 <span class="rating-val">{{ p.rating.toFixed(1) }}</span>
@@ -131,20 +161,35 @@ function addToCart(p: typeof store.products[0]) {
             <!-- Description -->
             <p class="card-desc">{{ p.description.slice(0, 88) }}…</p>
 
+            <!-- Size selector S / M / L -->
+            <div class="size-row">
+              <button
+                v-for="opt in SIZE_OPTIONS" :key="opt.key"
+                class="size-btn"
+                :class="{ active: getSize(p.id) === opt.key }"
+                @click="setSize(p.id, opt.key)"
+              >
+                {{ opt.label }}
+                <span class="size-diff" v-if="opt.diff !== 0">
+                  {{ opt.diff > 0 ? '+' : '' }}£{{ Math.abs(opt.diff).toFixed(2) }}
+                </span>
+              </button>
+            </div>
+
             <!-- Footer: price + CTA -->
             <div class="card-footer">
               <div class="price-wrap">
-                <span class="price">£{{ p.price.toFixed(2) }}</span>
+                <span class="price">£{{ effectivePrice(p).toFixed(2) }}</span>
                 <span v-if="p.originalPrice" class="price-orig">£{{ p.originalPrice.toFixed(2) }}</span>
               </div>
               <button
                 class="order-btn"
-                :class="{ added: added.has(p.id), disabled: p.stock === 0 }"
+                :class="{ added: wasAdded(p), disabled: p.stock === 0 }"
                 @click="addToCart(p)"
                 :disabled="p.stock === 0"
               >
                 <span v-if="p.stock === 0">Unavailable</span>
-                <span v-else-if="added.has(p.id)">✓ Added</span>
+                <span v-else-if="wasAdded(p)">✓ Added</span>
                 <span v-else>Add to Order</span>
               </button>
             </div>
@@ -161,6 +206,60 @@ function addToCart(p: typeof store.products[0]) {
 
       </div>
     </div>
+
+    <!-- ── Product detail modal ── -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="detailProduct" class="modal-backdrop" @click.self="closeDetail">
+          <div class="modal-panel">
+            <button class="modal-close" @click="closeDetail">✕</button>
+
+            <div class="modal-hero">
+              <div class="modal-img-bg" :style="{ background: detailProduct.gradient }"></div>
+              <img :src="detailProduct.image" :alt="detailProduct.name" class="modal-img"
+                   @error="() => {}"/>
+              <div class="modal-img-fade"></div>
+              <span class="modal-cat">{{ detailProduct.category }}</span>
+            </div>
+
+            <div class="modal-body">
+              <h2 class="modal-name">{{ detailProduct.name }}</h2>
+              <p class="modal-flavor">{{ detailProduct.scentType }}</p>
+              <p class="modal-desc">{{ detailProduct.description }}</p>
+
+              <div class="modal-size-row">
+                <button v-for="opt in SIZE_OPTIONS" :key="opt.key"
+                  class="size-btn"
+                  :class="{ active: getSize(detailProduct.id) === opt.key }"
+                  @click="setSize(detailProduct.id, opt.key)">
+                  {{ opt.label }}
+                  <span class="size-diff" v-if="opt.diff !== 0">
+                    {{ opt.diff > 0 ? '+' : '' }}£{{ Math.abs(opt.diff).toFixed(2) }}
+                  </span>
+                </button>
+              </div>
+
+              <div class="modal-footer">
+                <span class="modal-price">£{{ effectivePrice(detailProduct).toFixed(2) }}</span>
+                <button class="modal-add"
+                  :class="{ added: wasAdded(detailProduct), disabled: detailProduct.stock === 0 }"
+                  :disabled="detailProduct.stock === 0"
+                  @click="addToCart(detailProduct)">
+                  <span v-if="detailProduct.stock === 0">Unavailable</span>
+                  <span v-else-if="wasAdded(detailProduct)">✓ Added!</span>
+                  <span v-else>Add to Order</span>
+                </button>
+              </div>
+
+              <div class="modal-reviews-section">
+                <h3 class="reviews-heading">Customer Reviews</h3>
+                <ProductReviews :product-id="detailProduct.id" :product-name="detailProduct.name"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -289,6 +388,20 @@ function addToCart(p: typeof store.products[0]) {
 .card-desc   { font-size: 12.5px; color: #6b6762; line-height: 1.6; margin: 0 0 16px; flex: 1;
                display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
+/* ── SIZE SELECTOR ───────────────────────────────────────── */
+.size-row { display: flex; gap: 6px; margin-bottom: 14px; }
+.size-btn {
+  flex: 1; border: 1.5px solid #e7e5e4; border-radius: 9px;
+  background: #faf7f2; cursor: pointer; padding: 7px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  font-size: 13px; font-weight: 700; color: #57534e;
+  transition: all 0.15s;
+}
+.size-btn:hover { border-color: #c8813a; color: #c8813a; }
+.size-btn.active { background: #1c1917; border-color: #1c1917; color: #fff; }
+.size-diff { font-size: 9px; font-weight: 600; opacity: 0.75; }
+.size-btn.active .size-diff { opacity: 0.8; color: #d4a060; }
+
 /* ── CARD FOOTER ─────────────────────────────────────────── */
 .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; }
 
@@ -320,4 +433,61 @@ function addToCart(p: typeof store.products[0]) {
 .empty-sub   { font-size: 14px; color: #a8a29e; margin: 0 0 24px; }
 .empty-reset { background: #1c1917; color: #fff; border: none; border-radius: 10px; padding: 11px 24px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
 .empty-reset:hover { background: #c8813a; }
+
+/* ── CLICKABLE NAME ──────────────────────────────────────── */
+.link-name { cursor: pointer; }
+.link-name:hover { color: #c8813a; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-panel {
+  background: #fff; border-radius: 22px; width: 100%; max-width: 580px;
+  max-height: 90vh; overflow-y: auto; position: relative;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+}
+.modal-close {
+  position: absolute; top: 14px; right: 14px; z-index: 10;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(0,0,0,0.45); color: #fff; border: none;
+  font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.modal-close:hover { background: rgba(0,0,0,0.7); }
+
+.modal-hero { position: relative; height: 220px; overflow: hidden; border-radius: 22px 22px 0 0; }
+.modal-img-bg { position: absolute; inset: 0; }
+.modal-img    { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+.modal-img-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: linear-gradient(to top, rgba(0,0,0,0.4), transparent); z-index: 2; }
+.modal-cat { position: absolute; bottom: 14px; left: 16px; z-index: 3; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; background: rgba(0,0,0,0.55); color: #fff; border-radius: 20px; padding: 4px 12px; }
+
+.modal-body { padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 14px; }
+.modal-name   { font-size: 24px; font-weight: 900; color: #1c1917; margin: 0; letter-spacing: -0.5px; }
+.modal-flavor { font-size: 13px; color: #a8a29e; font-style: italic; margin: 0; }
+.modal-desc   { font-size: 14px; color: #57534e; line-height: 1.65; margin: 0; }
+
+.modal-size-row { display: flex; gap: 8px; }
+
+.modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-top: 1px solid #f0ebe4; }
+.modal-price  { font-size: 26px; font-weight: 900; color: #1c1917; }
+.modal-add {
+  background: #1c1917; color: #fff; border: none; border-radius: 11px;
+  padding: 12px 24px; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: background 0.18s;
+}
+.modal-add:hover:not(:disabled) { background: #c8813a; }
+.modal-add.added   { background: #16a34a; }
+.modal-add.disabled, .modal-add:disabled { background: #e7e5e4; color: #a8a29e; cursor: not-allowed; }
+
+.modal-reviews-section { border-top: 1px solid #f0ebe4; padding-top: 20px; }
+.reviews-heading { font-size: 16px; font-weight: 800; color: #1c1917; margin: 0 0 16px; }
+
+/* Modal transition */
+.modal-enter-active, .modal-leave-active { transition: all 0.28s cubic-bezier(0.4,0,0.2,1); }
+.modal-enter-from, .modal-leave-to { opacity: 0; }
+.modal-enter-from .modal-panel, .modal-leave-to .modal-panel { transform: scale(0.94) translateY(16px); }
 </style>

@@ -116,7 +116,7 @@ function restart() {
           <div class="res-cup">
             <div class="res-cup-bg" :style="{ background: result.gradient }"></div>
             <img :src="result.image" :alt="result.name" class="res-photo"
-                 @error="(e) => (e.target as HTMLImageElement).style.display='none'"/>
+                 @error="() => {}"/>
           </div>
           <div class="res-body">
             <span class="res-cat">{{ result.category }}</span>

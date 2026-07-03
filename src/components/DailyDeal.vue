@@ -70,7 +70,7 @@ function order() {
         <div class="deal-cup-wrap">
           <div class="deal-cup-bg" :style="{ background: deal.gradient }"></div>
           <img :src="deal.image" :alt="deal.name" class="deal-photo"
-               @error="(e) => (e.target as HTMLImageElement).style.display='none'"/>
+               @error="() => {}"/>
         </div>
         <div class="deal-tag">Only today!</div>
       </div>

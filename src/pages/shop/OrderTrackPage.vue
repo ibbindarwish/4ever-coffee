@@ -137,7 +137,7 @@ onUnmounted(() => clearInterval(refreshTimer))
               <div class="item-img">
                 <div class="item-img-bg" :style="{ background: item.product.gradient }"></div>
                 <img :src="item.product.image" :alt="item.product.name" class="item-photo"
-                     @error="(e) => (e.target as HTMLImageElement).style.display='none'"/>
+                     @error="() => {}"/>
               </div>
               <div class="item-info">
                 <div class="item-name">{{ item.product.name }}</div>

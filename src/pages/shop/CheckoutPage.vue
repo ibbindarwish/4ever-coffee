@@ -1,21 +1,43 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../../stores/cart'
-import { useOrdersStore } from '../../stores/orders'
-import { useProductsStore } from '../../stores/products'
 import { usePromoStore } from '../../stores/promo'
+import { useCheckoutStore } from '../../stores/checkout'
+import { useAuthStore } from '../../stores/auth'
 
 const router   = useRouter()
 const cart     = useCartStore()
-const orders   = useOrdersStore()
-const products = useProductsStore()
 const promo    = usePromoStore()
+const checkout = useCheckoutStore()
+const auth     = useAuthStore()
 
-const form   = ref({ name: '', email: '', phone: '', address: '', city: '', zip: '' })
+const form   = ref({
+  name:    checkout.delivery.name    || '',
+  email:   checkout.delivery.email   || '',
+  phone:   checkout.delivery.phone   || '',
+  address: checkout.delivery.address || '',
+  city:    checkout.delivery.city    || '',
+  zip:     checkout.delivery.zip     || '',
+})
 const errors = ref<Partial<typeof form.value>>({})
 const promoInput = ref('')
 const promoApplied = ref(false)
+
+// Auto-apply staff/admin discount if an admin user is browsing the shop
+onMounted(() => {
+  if (auth.user?.role && !promo.applied?.staffRole) {
+    promo.autoApplyForRole(auth.user.role)
+  }
+})
+
+const isStaffDiscount = computed(() => !!promo.applied?.staffRole)
+const staffLabel = computed(() => {
+  const role = promo.applied?.staffRole
+  if (role === 'admin') return '👑 Admin benefit — 50% off'
+  if (role === 'staff') return '🏷 Staff benefit — 15% off'
+  return ''
+})
 
 const discount        = computed(() => promo.calcDiscount(cart.subtotal))
 const effectiveShip   = computed(() => promo.isFreeShip() ? 0 : cart.shipping)
@@ -47,21 +69,10 @@ function validate() {
   return Object.keys(errors.value).length === 0
 }
 
-function placeOrder() {
+function proceedToPayment() {
   if (!validate()) return
-  const id = orders.placeOrder({
-    items:     cart.items.map(i => ({ ...i })),
-    customer:  { ...form.value },
-    subtotal:  cart.subtotal,
-    shipping:  effectiveShip.value,
-    discount:  discount.value || undefined,
-    promoCode: promo.applied?.code,
-    total:     finalTotal.value,
-  })
-  cart.items.forEach(item => products.updateStock(item.product.id, -item.qty))
-  cart.clearCart()
-  promo.clear()
-  router.push({ name: 'success', query: { id } })
+  checkout.save(form.value)
+  router.push('/shop/payment')
 }
 </script>
 
@@ -74,7 +85,7 @@ function placeOrder() {
 
         <!-- ── Left: delivery form ── -->
         <div class="checkout-left">
-          <form class="checkout-form" @submit.prevent="placeOrder">
+          <form class="checkout-form" @submit.prevent="proceedToPayment">
 
             <div class="form-section">
               <h3 class="form-section-title">
@@ -121,7 +132,18 @@ function placeOrder() {
                 <span class="step-num">2</span> Promo Code
               </h3>
 
-              <div v-if="promo.applied" class="promo-applied">
+              <!-- Staff / Admin auto-applied benefit -->
+              <div v-if="isStaffDiscount" class="staff-benefit-banner">
+                <div class="sbb-icon">{{ promo.applied?.staffRole === 'admin' ? '👑' : '🏷' }}</div>
+                <div class="sbb-info">
+                  <div class="sbb-title">{{ staffLabel }}</div>
+                  <div class="sbb-sub">Automatically applied to your order as a {{ promo.applied?.staffRole === 'admin' ? 'Admin' : 'Staff' }} member</div>
+                </div>
+                <div class="sbb-saving">−£{{ discount.toFixed(2) }}</div>
+              </div>
+
+              <!-- Manually applied promo -->
+              <div v-else-if="promo.applied" class="promo-applied">
                 <div class="promo-applied-left">
                   <span class="promo-tag">{{ promo.applied.code }}</span>
                   <span class="promo-label">{{ promo.applied.label }}</span>
@@ -129,19 +151,19 @@ function placeOrder() {
                 <button type="button" class="promo-remove" @click="removePromo">Remove</button>
               </div>
 
+              <!-- Entry field -->
               <div v-else>
                 <div class="promo-row">
-                  <input v-model="promoInput" class="input promo-input" placeholder="Enter code (e.g. WELCOME10)"
+                  <input v-model="promoInput" class="input promo-input" placeholder="Enter promo code"
                          @keydown.enter.prevent="applyPromo"/>
                   <button type="button" class="promo-btn" @click="applyPromo">Apply</button>
                 </div>
                 <p v-if="promo.error" class="err promo-err">{{ promo.error }}</p>
-                <p class="promo-hint">Try: WELCOME10 · SAVE20 · FREESHIP · 4EVER15</p>
               </div>
             </div>
 
             <button type="submit" class="place-btn">
-              Place Order · £{{ finalTotal.toFixed(2) }} →
+              🔒 Continue to Payment · £{{ finalTotal.toFixed(2) }} →
             </button>
           </form>
         </div>
@@ -149,14 +171,17 @@ function placeOrder() {
         <!-- ── Right: order summary ── -->
         <div class="order-summary">
           <h3>Your Order</h3>
-          <div v-for="item in cart.items" :key="item.product.id" class="sum-item">
+          <div v-for="item in cart.items" :key="`${item.product.id}-${item.size}`" class="sum-item">
             <div class="sum-item-img">
               <div class="sum-img-bg" :style="{ background: item.product.gradient }"></div>
               <img :src="item.product.image" :alt="item.product.name" class="sum-photo"
-                   @error="(e) => (e.target as HTMLImageElement).style.display='none'"/>
+                   @error="() => {}"/>
             </div>
-            <span class="sum-name">{{ item.product.name }} × {{ item.qty }}</span>
-            <span class="sum-price">£{{ (item.product.price * item.qty).toFixed(2) }}</span>
+            <div class="sum-name-wrap">
+              <span class="sum-name">{{ item.product.name }} × {{ item.qty }}</span>
+              <span class="sum-size-badge">{{ item.size[0].toUpperCase() }}</span>
+            </div>
+            <span class="sum-price">£{{ (cart.effectivePrice(item) * item.qty).toFixed(2) }}</span>
           </div>
 
           <div class="sum-divider"></div>
@@ -232,6 +257,19 @@ label        { font-size: 11px; font-weight: 600; color: #78716c; text-transform
 .promo-remove { background: none; border: 1px solid #a7f3d0; border-radius: 6px; color: #065f46; font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px 10px; transition: background 0.15s; }
 .promo-remove:hover { background: rgba(16,185,129,0.15); }
 
+/* Staff / Admin benefit banner */
+.staff-benefit-banner {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(135deg, #1c0a04 0%, #2a1208 100%);
+  border: 1px solid rgba(212,160,96,0.35);
+  border-radius: 12px; padding: 14px 18px;
+}
+.sbb-icon { font-size: 28px; flex-shrink: 0; }
+.sbb-info { flex: 1; }
+.sbb-title { font-size: 14px; font-weight: 800; color: #d4a060; margin-bottom: 2px; }
+.sbb-sub   { font-size: 11px; color: #78716c; }
+.sbb-saving { font-size: 18px; font-weight: 900; color: #4ade80; white-space: nowrap; }
+
 .place-btn { background: linear-gradient(135deg,#c8813a,#d4a060); color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(200,129,58,0.35); }
 .place-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(200,129,58,0.5); }
 
@@ -243,7 +281,9 @@ label        { font-size: 11px; font-weight: 600; color: #78716c; text-transform
 .sum-item-img { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; position: relative; overflow: hidden; }
 .sum-img-bg { position: absolute; inset: 0; }
 .sum-photo  { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
-.sum-name  { flex: 1; font-size: 13px; color: #57534e; min-width: 0; }
+.sum-name-wrap { flex: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.sum-name  { font-size: 13px; color: #57534e; flex: 1; min-width: 0; }
+.sum-size-badge { font-size: 9px; font-weight: 800; background: #1c1917; color: #d4a060; border-radius: 4px; padding: 2px 5px; flex-shrink: 0; }
 .sum-price { font-size: 13px; font-weight: 700; color: #1c1917; white-space: nowrap; }
 
 .sum-divider    { border: none; border-top: 1px solid #f0ebe4; margin: 10px 0; }

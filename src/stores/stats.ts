@@ -1,16 +1,67 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+export type Period = 'daily' | 'weekly' | 'monthly' | 'yearly'
+
+export interface PeriodStat {
+  value: string
+  change: string
+  positive: boolean
+  compLabel: string
+}
+
+export interface StatCard {
+  icon: string
+  labels: Record<Period, string>
+  data: Record<Period, PeriodStat>
+}
+
 export interface User {
   id: number; name: string; email: string; role: string; status: 'active' | 'inactive'; avatar: string
 }
 
 export const useStatsStore = defineStore('stats', () => {
-  const statCards = ref([
-    { label: 'Today\'s Revenue', value: '$1,248', change: '+18.4%', positive: true, icon: '☕' },
-    { label: 'Orders Today',     value: '184',    change: '+11.2%', positive: true, icon: '📋' },
-    { label: 'Active Customers', value: '2,340',  change: '+6.7%',  positive: true, icon: '👥' },
-    { label: 'Avg. Order Value', value: '$6.78',  change: '-1.2%',  positive: false, icon: '📈' },
+  const statCards = ref<StatCard[]>([
+    {
+      icon: '☕',
+      labels: { daily: "Today's Revenue", weekly: 'Weekly Revenue', monthly: 'Monthly Revenue', yearly: 'Yearly Revenue' },
+      data: {
+        daily:   { value: '£1,248',   change: '+18.4%', positive: true,  compLabel: 'vs yesterday' },
+        weekly:  { value: '£8,420',   change: '+14.3%', positive: true,  compLabel: 'vs last week' },
+        monthly: { value: '£34,600',  change: '+22.1%', positive: true,  compLabel: 'vs last month' },
+        yearly:  { value: '£412,000', change: '+31.2%', positive: true,  compLabel: 'vs last year' },
+      },
+    },
+    {
+      icon: '📋',
+      labels: { daily: 'Orders Today', weekly: 'Weekly Orders', monthly: 'Monthly Orders', yearly: 'Yearly Orders' },
+      data: {
+        daily:   { value: '184',    change: '+11.2%', positive: true,  compLabel: 'vs yesterday' },
+        weekly:  { value: '1,223',  change: '+9.7%',  positive: true,  compLabel: 'vs last week' },
+        monthly: { value: '4,890',  change: '+18.4%', positive: true,  compLabel: 'vs last month' },
+        yearly:  { value: '58,700', change: '+27.6%', positive: true,  compLabel: 'vs last year' },
+      },
+    },
+    {
+      icon: '📈',
+      labels: { daily: 'Avg. Order Value', weekly: 'Avg. Order Value', monthly: 'Avg. Order Value', yearly: 'Avg. Order Value' },
+      data: {
+        daily:   { value: '£6.78', change: '-1.2%', positive: false, compLabel: 'vs yesterday' },
+        weekly:  { value: '£6.88', change: '+1.5%', positive: true,  compLabel: 'vs last week' },
+        monthly: { value: '£7.05', change: '+2.8%', positive: true,  compLabel: 'vs last month' },
+        yearly:  { value: '£7.12', change: '+5.0%', positive: true,  compLabel: 'vs last year' },
+      },
+    },
+    {
+      icon: '🔄',
+      labels: { daily: 'Repeat Customers', weekly: 'Repeat Customers', monthly: 'Repeat Customers', yearly: 'Repeat Customers' },
+      data: {
+        daily:   { value: '74%', change: '+2.1%', positive: true,  compLabel: 'vs yesterday' },
+        weekly:  { value: '74%', change: '+3.2%', positive: true,  compLabel: 'vs last week' },
+        monthly: { value: '76%', change: '+4.1%', positive: true,  compLabel: 'vs last month' },
+        yearly:  { value: '71%', change: '-1.8%', positive: false, compLabel: 'vs last year' },
+      },
+    },
   ])
 
   const users = ref<User[]>([
