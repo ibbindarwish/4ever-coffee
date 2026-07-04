@@ -4,48 +4,36 @@ defineProps<{ size?: number; dark?: boolean }>()
 
 <template>
   <svg
-    :width="(size ?? 48) * 1.45"
+    :width="(size ?? 48) * 2.2"
     :height="size ?? 48"
-    viewBox="0 0 200 140"
+    viewBox="0 0 220 100"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     :style="{ color: dark ? '#1a0a04' : '#d4a060' }"
   >
-    <!-- "4" — left diagonal arm -->
-    <line
-      x1="44" y1="8"
-      x2="7"  y2="60"
-      stroke="currentColor" stroke-width="10" stroke-linecap="round"
-    />
+    <!-- Outer circle -->
+    <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="4" fill="none"/>
 
-    <!-- "4" — horizontal crossbar -->
-    <line
-      x1="7"  y1="60"
-      x2="76" y2="60"
-      stroke="currentColor" stroke-width="10" stroke-linecap="round"
-    />
+    <!-- Inner ring (premium detail) -->
+    <circle cx="50" cy="50" r="39" stroke="currentColor" stroke-width="1" fill="none" opacity="0.35"/>
 
-    <!-- "4" — right vertical stem descending into the circle -->
-    <line
-      x1="64" y1="8"
-      x2="64" y2="98"
-      stroke="currentColor" stroke-width="10" stroke-linecap="round"
-    />
+    <!-- "4" inside the circle -->
+    <!-- Diagonal arm: top-right down to left -->
+    <line x1="56" y1="18" x2="22" y2="58" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+    <!-- Horizontal crossbar -->
+    <line x1="22" y1="58" x2="72" y2="58" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+    <!-- Vertical stem -->
+    <line x1="56" y1="18" x2="56" y2="82" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
 
-    <!-- Circle connected beneath "4" (top of circle at y=98, same as stem end) -->
-    <circle
-      cx="64" cy="119" r="21"
-      stroke="currentColor" stroke-width="10" fill="none"
-    />
-
-    <!-- "ever" wordmark to the right -->
+    <!-- "ever" wordmark -->
     <text
-      x="96" y="72"
+      x="108" y="54"
       dominant-baseline="central"
-      font-size="38"
+      font-size="36"
       font-weight="900"
       fill="currentColor"
-      font-family="Arial Black, Arial, sans-serif"
+      font-family="'Arial Black', Arial, sans-serif"
+      letter-spacing="-0.5"
     >ever</text>
   </svg>
 </template>
