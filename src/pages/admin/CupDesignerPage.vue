@@ -59,6 +59,36 @@ const PRESETS = [
     sleeveColor: '#f5f2ee', borderColor: '#c8c0b8',
     logoColor: '#c8c0b8', steamColor: '#dddad6',
   },
+  {
+    name: 'UAE Pride',
+    bodyLight: '#faf5ec', bodyDark: '#c2a870',
+    sleeveColor: '#006233', borderColor: '#ffffff',
+    logoColor: '#ce1126', steamColor: '#ffffff',
+  },
+  {
+    name: 'Ramadan',
+    bodyLight: '#f5f0e8', bodyDark: '#c2a870',
+    sleeveColor: '#2d1b4e', borderColor: '#e8c840',
+    logoColor: '#e8c840', steamColor: '#e8c840',
+  },
+  {
+    name: 'Eid Special',
+    bodyLight: '#ffffff', bodyDark: '#e8d4a0',
+    sleeveColor: '#8b6914', borderColor: '#ffe066',
+    logoColor: '#ffe066', steamColor: '#ffe066',
+  },
+  {
+    name: 'Cobalt Blue',
+    bodyLight: '#f0f4ff', bodyDark: '#b0c0e8',
+    sleeveColor: '#0a1f6b', borderColor: '#60a5fa',
+    logoColor: '#60a5fa', steamColor: '#93c5fd',
+  },
+  {
+    name: 'Sunset',
+    bodyLight: '#fff5f0', bodyDark: '#e8a090',
+    sleeveColor: '#7c1d1d', borderColor: '#fb923c',
+    logoColor: '#fb923c', steamColor: '#fcd34d',
+  },
 ]
 
 const selectedPreset = ref(0)

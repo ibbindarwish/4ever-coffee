@@ -316,17 +316,19 @@ function closeDetail() { detailProduct.value = null }
 /* ── CARD ─────────────────────────────────────────────────── */
 .card {
   background: #fff;
-  border-radius: 18px;
+  border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
-  transition: transform 0.28s cubic-bezier(0.34,1.2,0.64,1), box-shadow 0.28s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.06);
+  transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1), box-shadow 0.3s ease, border-color 0.2s;
   cursor: default;
+  border: 1.5px solid transparent;
 }
 .card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08), 0 24px 48px rgba(0,0,0,0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(200,129,58,0.15), 0 24px 48px rgba(0,0,0,0.1);
+  border-color: rgba(212,160,96,0.3);
 }
 
 /* ── CARD IMAGE ──────────────────────────────────────────── */
@@ -410,7 +412,7 @@ function closeDetail() { detailProduct.value = null }
 .price-orig { font-size: 13px; color: #a8a29e; text-decoration: line-through; }
 
 .order-btn {
-  background: #1c1917;
+  background: linear-gradient(135deg, #1c1917, #2d1f1a);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -418,13 +420,18 @@ function closeDetail() { detailProduct.value = null }
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.18s, transform 0.15s;
+  transition: all 0.2s;
   white-space: nowrap;
   letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
-.order-btn:hover:not(:disabled) { background: #c8813a; transform: scale(1.03); }
-.order-btn.added  { background: #16a34a; }
-.order-btn.disabled, .order-btn:disabled { background: #e7e5e4; color: #a8a29e; cursor: not-allowed; transform: none; }
+.order-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c8813a, #d4a060);
+  transform: scale(1.04);
+  box-shadow: 0 4px 16px rgba(200,129,58,0.4);
+}
+.order-btn.added  { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 4px 12px rgba(16,185,129,0.35); }
+.order-btn.disabled, .order-btn:disabled { background: #e7e5e4; color: #a8a29e; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ── EMPTY STATE ─────────────────────────────────────────── */
 .empty-state { grid-column: 1/-1; text-align: center; padding: 80px 24px; }

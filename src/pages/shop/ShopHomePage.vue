@@ -193,11 +193,13 @@ onMounted(() => {
           <a href="#menu" class="btn-ghost">View Menu ↓</a>
         </div>
         <div class="hero-stats">
-          <div class="hstat"><span class="hstat-val">12</span><span class="hstat-label">Signature Drinks</span></div>
+          <div class="hstat"><span class="hstat-val">28</span><span class="hstat-label">Menu Items</span></div>
           <div class="hstat-div"></div>
           <div class="hstat"><span class="hstat-val">10k+</span><span class="hstat-label">Happy Customers</span></div>
           <div class="hstat-div"></div>
-          <div class="hstat"><span class="hstat-val">100%</span><span class="hstat-label">Premium Beans</span></div>
+          <div class="hstat"><span class="hstat-val">12</span><span class="hstat-label">Bean Origins</span></div>
+          <div class="hstat-div"></div>
+          <div class="hstat"><span class="hstat-val">4.9★</span><span class="hstat-label">Rating</span></div>
         </div>
       </div>
       <div class="hero-cups">
