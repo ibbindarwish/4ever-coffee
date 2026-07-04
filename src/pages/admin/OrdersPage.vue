@@ -212,19 +212,14 @@ function advanceStatus(id: string, next: OrderStatus) {
 
                   <!-- Order items -->
                   <div class="detail-items">
-                    <div v-if="o.items.length === 0" class="no-items">No item details available.</div>
-                    <div v-for="item in o.items" :key="`${item.product.id}-${item.size}`" class="detail-item">
-                      <div class="di-img">
-                        <div class="di-bg" :style="{ background: item.product.gradient }"></div>
-                        <img :src="item.product.image" :alt="item.product.name" class="di-photo"
-                          @error="() => {}"/>
-                      </div>
+                    <div v-for="item in o.items" :key="`${item.productId}-${item.size}-${item.name}`" class="detail-item">
+                      <div class="di-icon">☕</div>
                       <div class="di-info">
-                        <span class="di-name">{{ item.product.name }}</span>
+                        <span class="di-name">{{ item.name }}</span>
                         <span class="di-size">{{ SIZE_NAME[item.size] }}</span>
                       </div>
                       <span class="di-qty">× {{ item.qty }}</span>
-                      <span class="di-price">£{{ (item.product.price * item.qty).toFixed(2) }}</span>
+                      <span class="di-price">£{{ (item.price * item.qty).toFixed(2) }}</span>
                     </div>
                   </div>
 
@@ -232,7 +227,6 @@ function advanceStatus(id: string, next: OrderStatus) {
                   <div class="detail-addr">
                     <strong>Deliver to:</strong>
                     {{ o.customer.address }}, {{ o.customer.city }}
-                    <span v-if="o.customer.zip">&nbsp;{{ o.customer.zip }}</span>
                     &nbsp;·&nbsp;{{ o.customer.phone }}
                   </div>
                 </div>
@@ -360,9 +354,7 @@ function advanceStatus(id: string, next: OrderStatus) {
 .detail-items { display: flex; flex-direction: column; gap: 6px; }
 .no-items { font-size: 12px; color: #a8a29e; }
 .detail-item { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 9px; padding: 8px 12px; border: 1px solid #f0ebe4; }
-.di-img  { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; position: relative; overflow: hidden; }
-.di-bg   { position: absolute; inset: 0; }
-.di-photo{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+.di-icon { width: 34px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #1a0a04, #3d1a08); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .di-info { flex: 1; display: flex; align-items: center; gap: 8px; }
 .di-name { font-size: 13px; font-weight: 600; color: #1c1917; }
 .di-size { font-size: 10px; font-weight: 800; background: #1c1917; color: #d4a060; border-radius: 4px; padding: 1px 6px; }

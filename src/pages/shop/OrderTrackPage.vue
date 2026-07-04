@@ -130,20 +130,13 @@ onUnmounted(() => clearInterval(refreshTimer))
           <!-- Items -->
           <div class="detail-panel">
             <h3 class="dp-title">Items Ordered</h3>
-            <div v-if="order.items.length === 0" class="dp-empty">
-              Items unavailable for demo orders
-            </div>
-            <div v-for="item in order.items" :key="item.product.id" class="item-row">
-              <div class="item-img">
-                <div class="item-img-bg" :style="{ background: item.product.gradient }"></div>
-                <img :src="item.product.image" :alt="item.product.name" class="item-photo"
-                     @error="() => {}"/>
-              </div>
+            <div v-for="item in order.items" :key="`${item.productId}-${item.size}`" class="item-row">
+              <div class="item-icon">☕</div>
               <div class="item-info">
-                <div class="item-name">{{ item.product.name }}</div>
-                <div class="item-meta">× {{ item.qty }}</div>
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-meta">{{ item.size }} · × {{ item.qty }}</div>
               </div>
-              <div class="item-price">£{{ (item.product.price * item.qty).toFixed(2) }}</div>
+              <div class="item-price">£{{ (item.price * item.qty).toFixed(2) }}</div>
             </div>
           </div>
 
@@ -260,9 +253,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 .dp-empty { font-size: 13px; color: #a8a29e; font-style: italic; }
 
 .item-row  { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #faf7f2; }
-.item-img  { width: 48px; height: 48px; border-radius: 8px; flex-shrink: 0; position: relative; overflow: hidden; }
-.item-img-bg { position: absolute; inset: 0; }
-.item-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+.item-icon { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #1a0a04, #3d1a08); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .item-info { flex: 1; min-width: 0; }
 .item-name { font-size: 13px; font-weight: 600; color: #1c1917; }
 .item-meta { font-size: 11px; color: #a8a29e; }

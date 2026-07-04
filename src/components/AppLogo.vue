@@ -32,18 +32,17 @@ defineProps<{ size?: number; dark?: boolean }>()
     <circle cx="32"   cy="54.5" r="1.5" fill="currentColor" opacity="0.35"/>
     <circle cx="9.5"  cy="32"   r="1.5" fill="currentColor" opacity="0.35"/>
 
-    <!-- "4" — refined proportions, left arm diagonal -->
-    <line x1="39" y1="10" x2="10" y2="40"
-          stroke="currentColor" stroke-width="5.2" stroke-linecap="round"/>
-    <!-- "4" — horizontal crossbar -->
-    <line x1="10" y1="40" x2="55" y2="40"
-          stroke="currentColor" stroke-width="5.2" stroke-linecap="round"/>
-    <!-- "4" — vertical right stem -->
-    <line x1="39" y1="10" x2="39" y2="57"
-          stroke="currentColor" stroke-width="5.2" stroke-linecap="round"/>
+    <!-- "4" — one continuous hand-drawn stroke -->
+    <path d="M39,10 L10,40 L55,40 M39,10 L39,57"
+          fill="none" stroke="currentColor" stroke-width="5.2"
+          stroke-linecap="round" stroke-linejoin="round"/>
 
     <!-- Tiny accent dot at crossbar junction (premium detail) -->
     <circle cx="10" cy="40" r="2.4" fill="currentColor" opacity="0.55"/>
+
+    <!-- Signature tail — swooshes off the ring, echoing the sketch -->
+    <path d="M13,45 Q32,54 51,45 Q58,41 64,33"
+          fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
 
     <!-- ── WORDMARK ──────────────────────────────── -->
 

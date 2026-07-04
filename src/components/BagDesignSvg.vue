@@ -141,13 +141,14 @@ const fs = computed(() => ({
       <!-- Inner double ring -->
       <circle cx="130" cy="220" r="44"
               fill="none" :stroke="logoColor" stroke-width="0.9" opacity="0.35"/>
-      <!-- "4" lettermark — scaled to fit r=52 badge -->
-      <line x1="142" y1="190" x2="100" y2="232"
-            :stroke="logoColor" :stroke-width="fs.logoStroke * 1.6" stroke-linecap="round"/>
-      <line x1="99"  y1="232" x2="162" y2="232"
-            :stroke="logoColor" :stroke-width="fs.logoStroke * 1.6" stroke-linecap="round"/>
-      <line x1="142" y1="190" x2="142" y2="254"
-            :stroke="logoColor" :stroke-width="fs.logoStroke * 1.6" stroke-linecap="round"/>
+      <!-- "4" lettermark — one continuous hand-drawn stroke, scaled to fit r=52 badge -->
+      <path d="M142,190 L100,232 L162,232 M142,190 L142,254"
+            fill="none" :stroke="logoColor" :stroke-width="fs.logoStroke * 1.6"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Signature tail — swooshes off the ring, echoing the sketch -->
+      <path d="M95,260 Q130,276 167,260 Q188,249 207,224"
+            fill="none" :stroke="logoColor" :stroke-width="fs.logoStroke * 0.9"
+            stroke-linecap="round" opacity="0.9"/>
     </g>
 
     <!-- ══════════════════════════════════════════════════════════════ -->

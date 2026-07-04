@@ -33,7 +33,7 @@ function logout() { customerAuth.logout(); closeMenu() }
       <div class="header-inner">
         <RouterLink to="/shop" class="brand" @click="closeMenu">
           <AppLogo :size="34" :dark="true" />
-          <span class="brand-tagline">Coffee</span>
+          <span class="brand-tagline">Premium Roastery</span>
         </RouterLink>
 
         <!-- Desktop nav -->

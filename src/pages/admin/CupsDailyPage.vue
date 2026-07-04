@@ -21,8 +21,8 @@ function cupsFromOrder(o: Order): number {
   return Math.max(1, Math.round(o.subtotal / 5))
 }
 
-function damagedFromOrder(o: Order): number { return o.damagedCups ?? 0 }
-function returnedFromOrder(o: Order): number { return o.returnedCups ?? 0 }
+function damagedFromOrder(_o: Order): number { return 0 }
+function returnedFromOrder(_o: Order): number { return 0 }
 
 // Use the latest order date as the anchor so demo data always looks current
 const latestDate = computed(() => {

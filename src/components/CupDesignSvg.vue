@@ -126,10 +126,14 @@ const ssp  = computed(() => props.subSpacing   ?? 2)
       <!-- Inner double-ring -->
       <circle cx="80" cy="153" r="21" fill="none"
               :stroke="logoColor" stroke-width="0.75" opacity="0.38"/>
-      <!-- "4" lettermark -->
-      <line x1="86" y1="139" x2="62"  y2="160" :stroke="logoColor" stroke-width="3.8" stroke-linecap="round"/>
-      <line x1="61" y1="160" x2="100" y2="160" :stroke="logoColor" stroke-width="3.8" stroke-linecap="round"/>
-      <line x1="86" y1="139" x2="86"  y2="170" :stroke="logoColor" stroke-width="3.8" stroke-linecap="round"/>
+      <!-- "4" lettermark — one continuous hand-drawn stroke -->
+      <path d="M87,138 L61,161 L100,161 M87,138 L87,171"
+            fill="none" :stroke="logoColor" stroke-width="4.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- Signature tail — swooshes off the ring, echoing the sketch -->
+      <path d="M63,172 Q80,180 98,172 Q108,167 117,155"
+            fill="none" :stroke="logoColor" stroke-width="2.4"
+            stroke-linecap="round" opacity="0.9"/>
     </template>
 
     <!-- ── SLEEVE TEXT ── -->
