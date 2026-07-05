@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useProductsStore } from './products'
 
 export interface LoyaltyEvent {
   id: string
@@ -9,10 +10,13 @@ export interface LoyaltyEvent {
   orderId?: string
 }
 
-const LS_KEY = 'fc_loyalty'
+const LS_KEY          = 'fc_loyalty'
+const LS_COLLECTED_KEY = 'fc_loyalty_collected'
+const LS_BADGE_KEY     = 'fc_loyalty_badge'
 const POINTS_PER_POUND = 10
 const REDEEM_RATE = 500   // 500 pts = £5 off
 const REDEEM_VALUE = 5
+const COLLECTION_BONUS = 250   // pts awarded once all 4 seasonal items are ordered
 
 function loadEvents(): LoyaltyEvent[] {
   try {
@@ -22,8 +26,35 @@ function loadEvents(): LoyaltyEvent[] {
   return []
 }
 
+function loadCollected(): number[] {
+  try {
+    const raw = localStorage.getItem(LS_COLLECTED_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return []
+}
+
+function loadBadgeDate(): string | null {
+  return localStorage.getItem(LS_BADGE_KEY)
+}
+
 export const useLoyaltyStore = defineStore('loyalty', () => {
   const events = ref<LoyaltyEvent[]>(loadEvents())
+  const collectedProductIds = ref<number[]>(loadCollected())
+  const collectorBadgeDate  = ref<string | null>(loadBadgeDate())
+
+  // "The 4 Collection" — this season's 4 featured items, tracked via the seasonal flag
+  const seasonalItems = computed(() => {
+    const products = useProductsStore()
+    return products.products.filter(p => p.seasonal).slice(0, 4)
+  })
+  const collectedSeasonalIds = computed(() =>
+    seasonalItems.value.filter(p => collectedProductIds.value.includes(p.id)).map(p => p.id)
+  )
+  const isCollectionComplete = computed(() =>
+    seasonalItems.value.length > 0 && collectedSeasonalIds.value.length === seasonalItems.value.length
+  )
+  const hasCollectorBadge = computed(() => !!collectorBadgeDate.value)
 
   const balance = computed(() => events.value.reduce((s, e) => s + e.points, 0))
   const tier = computed(() => {
@@ -40,7 +71,7 @@ export const useLoyaltyStore = defineStore('loyalty', () => {
   })
   const canRedeem = computed(() => balance.value >= REDEEM_RATE)
 
-  function earnFromOrder(total: number, orderId: string) {
+  function earnFromOrder(total: number, orderId: string, productIds: number[] = []) {
     const pts = Math.floor(total * POINTS_PER_POUND)
     const ev: LoyaltyEvent = {
       id:          crypto.randomUUID(),
@@ -50,6 +81,24 @@ export const useLoyaltyStore = defineStore('loyalty', () => {
       orderId,
     }
     events.value.push(ev)
+
+    const newIds = productIds.filter(id => !collectedProductIds.value.includes(id))
+    if (newIds.length) {
+      collectedProductIds.value.push(...newIds)
+      localStorage.setItem(LS_COLLECTED_KEY, JSON.stringify(collectedProductIds.value))
+    }
+
+    if (isCollectionComplete.value && !hasCollectorBadge.value) {
+      collectorBadgeDate.value = ev.date
+      localStorage.setItem(LS_BADGE_KEY, ev.date)
+      events.value.push({
+        id:          crypto.randomUUID(),
+        date:        ev.date,
+        description: '🏅 The 4 Collection complete — 4ever Member bonus',
+        points:      COLLECTION_BONUS,
+      })
+    }
+
     persist()
   }
 
@@ -74,5 +123,7 @@ export const useLoyaltyStore = defineStore('loyalty', () => {
     events, balance, tier, nextTier, canRedeem,
     earnFromOrder, redeem,
     POINTS_PER_POUND, REDEEM_RATE, REDEEM_VALUE,
+    seasonalItems, collectedSeasonalIds, isCollectionComplete, hasCollectorBadge, collectorBadgeDate,
+    COLLECTION_BONUS,
   }
 })

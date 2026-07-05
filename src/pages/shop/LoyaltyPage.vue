@@ -58,6 +58,35 @@ function redeem() {
         </div>
       </div>
 
+      <!-- ── The 4 Collection ── -->
+      <div class="collection-card" :class="{ complete: loyalty.isCollectionComplete }">
+        <div class="collection-head">
+          <div>
+            <h2 class="section-title collection-title">
+              The 4 Collection
+              <span v-if="loyalty.hasCollectorBadge" class="badge-pill">🏅 4ever Member</span>
+            </h2>
+            <p class="collection-sub">
+              Order all 4 of this season's featured picks to earn your 4ever Member badge
+              + {{ loyalty.COLLECTION_BONUS }} bonus points.
+            </p>
+          </div>
+          <div class="collection-count">{{ loyalty.collectedSeasonalIds.length }}/{{ loyalty.seasonalItems.length }}</div>
+        </div>
+
+        <div v-if="loyalty.seasonalItems.length" class="collection-grid">
+          <div v-for="(item, idx) in loyalty.seasonalItems" :key="item.id"
+               class="collection-item" :class="{ got: loyalty.collectedSeasonalIds.includes(item.id) }">
+            <div class="collection-num">{{ idx + 1 }}</div>
+            <img :src="item.image" :alt="item.name" class="collection-img"/>
+            <div class="collection-check" v-if="loyalty.collectedSeasonalIds.includes(item.id)">✓</div>
+            <div class="collection-name">{{ item.name }}</div>
+            <div class="collection-status">{{ loyalty.collectedSeasonalIds.includes(item.id) ? 'Collected' : 'Not yet' }}</div>
+          </div>
+        </div>
+        <p v-else class="collection-empty">No seasonal collection is live right now — check back soon!</p>
+      </div>
+
       <!-- ── Tier Roadmap ── -->
       <div class="tier-roadmap">
         <h2 class="section-title center-title">Membership Tiers</h2>
@@ -215,6 +244,47 @@ function redeem() {
 .progress-fill { height: 100%; background: linear-gradient(90deg, #d4a060, #f5c878); border-radius: 99px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
 
 .tier-max { padding: 12px 0 20px; font-size: 13px; color: #d4a060; font-weight: 600; }
+
+/* ── The 4 Collection ── */
+.collection-card {
+  background: #fff; border: 1.5px solid #f0ebe4; border-radius: 20px;
+  padding: 24px; margin-bottom: 28px; transition: all 0.25s;
+}
+.collection-card.complete { border-color: #d4a060; box-shadow: 0 8px 32px rgba(212,160,96,0.18); background: linear-gradient(160deg, #fffbf5, #fff); }
+.collection-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.collection-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 6px; }
+.collection-sub  { font-size: 12px; color: #78716c; margin: 0; max-width: 480px; line-height: 1.5; }
+.collection-count { font-size: 20px; font-weight: 900; color: #d4a060; white-space: nowrap; }
+.badge-pill {
+  font-size: 11px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #c8813a, #d4a060);
+  border-radius: 20px; padding: 4px 12px;
+}
+
+.collection-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (max-width: 700px) { .collection-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.collection-item {
+  position: relative; background: #faf7f2; border: 1.5px solid #f0ebe4; border-radius: 14px;
+  padding: 10px; text-align: center; transition: all 0.2s; opacity: 0.55;
+}
+.collection-item.got { opacity: 1; border-color: #d4a060; background: #fffbf5; }
+.collection-num {
+  position: absolute; top: 8px; left: 8px; width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(28,25,23,0.6); color: #fff; font-size: 10px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.collection-img { width: 100%; height: 64px; object-fit: cover; border-radius: 10px; margin-bottom: 8px; filter: grayscale(0.7); }
+.collection-item.got .collection-img { filter: none; }
+.collection-check {
+  position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; border-radius: 50%;
+  background: #16a34a; color: #fff; font-size: 12px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+}
+.collection-name   { font-size: 12px; font-weight: 700; color: #1c1917; margin-bottom: 2px; }
+.collection-status { font-size: 10px; font-weight: 700; color: #a8a29e; text-transform: uppercase; letter-spacing: 0.04em; }
+.collection-item.got .collection-status { color: #16a34a; }
+.collection-empty { font-size: 13px; color: #a8a29e; text-align: center; padding: 12px 0; }
 
 /* ── Tier Roadmap ── */
 .tier-roadmap { margin-bottom: 28px; }

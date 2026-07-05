@@ -213,7 +213,7 @@ async function pay() {
     total:     finalTotal.value,
   })
   cart.items.forEach(item => products.updateStock(item.product.id, -item.qty))
-  loyalty.earnFromOrder(finalTotal.value, id)
+  loyalty.earnFromOrder(finalTotal.value, id, cart.items.map(i => i.product.id))
   cart.clearCart()
   promo.clear()
   checkout.clear()

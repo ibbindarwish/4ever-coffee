@@ -52,6 +52,12 @@ const router = createRouter({
         { path: 'login',       name: 'customer-login', component: () => import('../pages/shop/CustomerLoginPage.vue') },
       ],
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('../pages/MaintenancePage.vue'),
+      meta: { public: true },
+    },
   ],
 })
 
