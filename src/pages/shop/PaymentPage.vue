@@ -32,6 +32,7 @@ const cardExpiry  = ref('')
 const cardCVV     = ref('')
 const cvvFocused  = ref(false)
 const errors      = ref<Record<string, string>>({})
+const touched     = ref<Record<string, boolean>>({})
 const processing  = ref(false)
 
 // ── Card brand detection ─────────────────────────────
@@ -56,6 +57,22 @@ const cardBrandLabel = computed(() => ({
   visa: 'VISA', mastercard: 'MC', amex: 'AMEX', discover: 'DISC', generic: '',
 }[cardBrand.value]))
 
+const cardNumberLength = computed(() => cardBrand.value === 'amex' ? 15 : 16)
+const cvvLength        = computed(() => cardBrand.value === 'amex' ? 4  : 3)
+
+// ── Luhn checksum — catches mistyped digits, not just wrong length ──
+function luhnValid(digits: string) {
+  let sum = 0
+  let double = false
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let d = +digits[i]
+    if (double) { d *= 2; if (d > 9) d -= 9 }
+    sum += d
+    double = !double
+  }
+  return sum % 10 === 0
+}
+
 // ── Formatted display values ────────────────────────
 const displayNumber = computed(() => {
   const raw = cardNumber.value.replace(/\s/g, '').padEnd(16, '•')
@@ -73,8 +90,7 @@ const displayExpiry = computed(() =>
 function onCardNumberInput(e: Event) {
   const input = e.target as HTMLInputElement
   let val = input.value.replace(/\D/g, '')
-  const max = cardBrand.value === 'amex' ? 15 : 16
-  val = val.slice(0, max)
+  val = val.slice(0, cardNumberLength.value)
   if (cardBrand.value === 'amex') {
     val = val.replace(/(\d{4})(\d{1,6})?(\d{1,5})?/, (_, a, b, c) =>
       [a, b, c].filter(Boolean).join(' ')
@@ -83,18 +99,38 @@ function onCardNumberInput(e: Event) {
     val = val.replace(/(\d{4})(?=\d)/g, '$1 ')
   }
   cardNumber.value = val
+  if (touched.value.number) validateField('number')
+}
+
+function onNameInput(e: Event) {
+  const input = e.target as HTMLInputElement
+  cardName.value = input.value.replace(/[^A-Za-z\s'-]/g, '').toUpperCase().slice(0, 40)
+  if (touched.value.name) validateField('name')
 }
 
 function onExpiryInput(e: Event) {
   const input = e.target as HTMLInputElement
   let val = input.value.replace(/\D/g, '').slice(0, 4)
+  // auto-correct an impossible first month digit (e.g. "5" -> "05")
+  if (val.length === 1 && +val[0] > 1) val = '0' + val[0]
+  if (val.length >= 2) {
+    const mm = Math.min(+val.slice(0, 2), 12) || 1
+    val = String(mm).padStart(2, '0') + val.slice(2)
+  }
   if (val.length >= 3) val = val.slice(0, 2) + '/' + val.slice(2)
   cardExpiry.value = val
+  if (touched.value.expiry) validateField('expiry')
 }
 
 function onCVVInput(e: Event) {
   const input = e.target as HTMLInputElement
-  cardCVV.value = input.value.replace(/\D/g, '').slice(0, cardBrand.value === 'amex' ? 4 : 3)
+  cardCVV.value = input.value.replace(/\D/g, '').slice(0, cvvLength.value)
+  if (touched.value.cvv) validateField('cvv')
+}
+
+function onFieldBlur(field: 'number' | 'name' | 'expiry' | 'cvv') {
+  touched.value[field] = true
+  validateField(field)
 }
 
 // ── Totals ──────────────────────────────────────────
@@ -102,19 +138,61 @@ const discount      = computed(() => promo.calcDiscount(cart.subtotal))
 const effectiveShip = computed(() => promo.isFreeShip() ? 0 : cart.shipping)
 const finalTotal    = computed(() => Math.max(0, cart.subtotal - discount.value + effectiveShip.value))
 
-// ── Validation ──────────────────────────────────────
+// ── Validation — checked live per field, not just on submit ──
+function checkNumber() {
+  const n = cardNumber.value.replace(/\s/g, '')
+  if (!n)                                   return 'Card number is required'
+  if (cardBrand.value === 'generic')        return 'Unrecognized or unsupported card type'
+  if (n.length !== cardNumberLength.value)  return `Card number must be ${cardNumberLength.value} digits`
+  if (!luhnValid(n))                        return 'Card number is invalid — please check the digits'
+  return ''
+}
+
+function checkName() {
+  const v = cardName.value.trim()
+  if (!v)                              return 'Cardholder name is required'
+  if (v.length < 3)                    return 'Name is too short'
+  if (!/^[A-Z\s'-]+$/.test(v))         return 'Name may only contain letters'
+  return ''
+}
+
+function checkExpiry() {
+  const m = cardExpiry.value.match(/^(\d{2})\/(\d{2})$/)
+  if (!m) return 'Enter expiry as MM/YY'
+  const mm = +m[1], yy = +m[2]
+  if (mm < 1 || mm > 12) return 'Invalid month'
+  const now = new Date()
+  const nowY = now.getFullYear(), nowM = now.getMonth() + 1
+  if (2000 + yy < nowY || (2000 + yy === nowY && mm < nowM)) return 'Card has expired'
+  return ''
+}
+
+function checkCVV() {
+  if (!cardCVV.value)                        return 'Security code is required'
+  if (cardCVV.value.length !== cvvLength.value) return `${cvvLength.value}-digit security code required`
+  return ''
+}
+
+const fieldChecks = { number: checkNumber, name: checkName, expiry: checkExpiry, cvv: checkCVV }
+
+function validateField(field: keyof typeof fieldChecks) {
+  const msg = fieldChecks[field]()
+  if (msg) errors.value[field] = msg
+  else     delete errors.value[field]
+}
+
+const isCardValid = computed(() =>
+  payMethod.value !== 'card' ||
+  (!checkNumber() && !checkName() && !checkExpiry() && !checkCVV())
+)
+
 function validate() {
   errors.value = {}
   if (payMethod.value !== 'card') return true
-  const n = cardNumber.value.replace(/\s/g, '')
-  if (!n || n.length < 15)                   errors.value.number  = 'Valid card number required'
-  if (!cardName.value.trim())                 errors.value.name    = 'Cardholder name required'
-  const [mm, yy] = cardExpiry.value.split('/')
-  const now = new Date()
-  const exp = new Date(2000 + +yy, +mm - 1)
-  if (!mm || !yy || exp < now)               errors.value.expiry  = 'Valid expiry required'
-  const cvvLen = cardBrand.value === 'amex' ? 4 : 3
-  if (!cardCVV.value || cardCVV.value.length < cvvLen) errors.value.cvv = `${cvvLen}-digit CVV required`
+  ;(Object.keys(fieldChecks) as (keyof typeof fieldChecks)[]).forEach(f => {
+    touched.value[f] = true
+    validateField(f)
+  })
   return Object.keys(errors.value).length === 0
 }
 
@@ -222,7 +300,7 @@ async function pay() {
                       <div class="sig-lines">
                         <span v-for="i in 8" :key="i"></span>
                       </div>
-                      <div class="cvv-box">{{ cardCVV || '•••' }}</div>
+                      <div class="cvv-box">{{ cardCVV ? '•'.repeat(cardCVV.length) : '•••' }}</div>
                     </div>
                   </div>
                   <div class="card-back-brand">{{ cardBrandLabel }}</div>
@@ -239,21 +317,31 @@ async function pay() {
                   <input
                     :value="cardNumber"
                     @input="onCardNumberInput"
-                    class="input" :class="{ error: errors.number }"
+                    @blur="onFieldBlur('number')"
+                    class="input" :class="{ error: touched.number && errors.number, valid: touched.number && !errors.number && cardNumber }"
                     placeholder="1234 5678 9012 3456"
                     maxlength="19"
                     inputmode="numeric"
+                    autocomplete="cc-number"
+                    spellcheck="false"
                   />
                   <span class="input-brand-chip" v-if="cardBrand !== 'generic'">{{ cardBrandLabel }}</span>
                 </div>
-                <span v-if="errors.number" class="err">{{ errors.number }}</span>
+                <span v-if="touched.number && errors.number" class="err">{{ errors.number }}</span>
               </div>
 
               <div class="form-group">
                 <label>Cardholder Name</label>
-                <input v-model="cardName" class="input" :class="{ error: errors.name }"
-                  placeholder="As it appears on card" @input="cardName = (cardName).toUpperCase()"/>
-                <span v-if="errors.name" class="err">{{ errors.name }}</span>
+                <input
+                  :value="cardName"
+                  @input="onNameInput"
+                  @blur="onFieldBlur('name')"
+                  class="input" :class="{ error: touched.name && errors.name, valid: touched.name && !errors.name && cardName }"
+                  placeholder="As it appears on card"
+                  autocomplete="cc-name"
+                  spellcheck="false"
+                />
+                <span v-if="touched.name && errors.name" class="err">{{ errors.name }}</span>
               </div>
 
               <div class="form-row-2">
@@ -262,29 +350,33 @@ async function pay() {
                   <input
                     :value="cardExpiry"
                     @input="onExpiryInput"
-                    class="input" :class="{ error: errors.expiry }"
+                    @blur="onFieldBlur('expiry')"
+                    class="input" :class="{ error: touched.expiry && errors.expiry, valid: touched.expiry && !errors.expiry && cardExpiry }"
                     placeholder="MM/YY" maxlength="5" inputmode="numeric"
+                    autocomplete="cc-exp"
                   />
-                  <span v-if="errors.expiry" class="err">{{ errors.expiry }}</span>
+                  <span v-if="touched.expiry && errors.expiry" class="err">{{ errors.expiry }}</span>
                 </div>
                 <div class="form-group">
-                  <label>CVV <span class="cvv-hint">({{ cardBrand === 'amex' ? '4' : '3' }} digits)</span></label>
+                  <label>CVV <span class="cvv-hint">({{ cvvLength }} digits)</span></label>
                   <div class="input-icon-wrap">
                     <input
                       :value="cardCVV"
                       @input="onCVVInput"
                       @focus="cvvFocused = true"
-                      @blur="cvvFocused = false"
-                      class="input" :class="{ error: errors.cvv }"
+                      @blur="cvvFocused = false; onFieldBlur('cvv')"
+                      class="input" :class="{ error: touched.cvv && errors.cvv, valid: touched.cvv && !errors.cvv && cardCVV }"
                       placeholder="•••" type="password"
-                      :maxlength="cardBrand === 'amex' ? 4 : 3"
+                      :maxlength="cvvLength"
                       inputmode="numeric"
+                      autocomplete="off"
                     />
                     <svg class="cvv-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                       <rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/>
                     </svg>
                   </div>
-                  <span v-if="errors.cvv" class="err">{{ errors.cvv }}</span>
+                  <span v-if="touched.cvv && errors.cvv" class="err">{{ errors.cvv }}</span>
+                  <span class="cvv-note">Never share this code — we never ask for it by phone or email.</span>
                 </div>
               </div>
             </div>
@@ -335,7 +427,7 @@ async function pay() {
           </div>
 
           <!-- Pay button -->
-          <button class="pay-btn" :class="{ loading: processing }" @click="pay" :disabled="processing">
+          <button class="pay-btn" :class="{ loading: processing }" @click="pay" :disabled="processing || !isCardValid">
             <template v-if="processing">
               <span class="spinner"></span> Processing…
             </template>
@@ -415,7 +507,7 @@ async function pay() {
 .bc-sep     { color: #d0c8c0; font-size: 13px; }
 .bc-current { font-size: 13px; font-weight: 700; color: #1c1917; }
 
-.page-title { font-size: 26px; font-weight: 900; color: #1c1917; margin-bottom: 28px; letter-spacing: -.5px; }
+.page-title { font-size: 30px; font-weight: 700; color: #1c1917; margin-bottom: 28px; font-family: 'Playfair Display', serif; }
 
 .pay-layout { display: grid; grid-template-columns: 1fr 310px; gap: 28px; align-items: start; }
 @media (max-width: 760px) { .pay-layout { grid-template-columns: 1fr; } }
@@ -516,8 +608,10 @@ label       { font-size: 11px; font-weight: 600; color: #78716c; text-transform:
   transition: border-color .15s, background .15s; width: 100%; box-sizing: border-box; font-family: inherit;
 }
 .input:focus { border-color: #d4a060; background: #fff; }
-.input.error { border-color: #ef4444; }
-.err { font-size: 11px; color: #ef4444; }
+.input.error { border-color: #ef4444; background: #fef2f2; }
+.input.valid { border-color: #22c55e; }
+.err { font-size: 11px; color: #ef4444; font-weight: 600; }
+.cvv-note { font-size: 10px; color: #a8a29e; line-height: 1.4; }
 
 .input-icon-wrap { position: relative; }
 .input-icon-wrap .input { padding-right: 52px; }

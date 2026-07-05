@@ -131,7 +131,11 @@ onUnmounted(() => clearInterval(refreshTimer))
           <div class="detail-panel">
             <h3 class="dp-title">Items Ordered</h3>
             <div v-for="item in order.items" :key="`${item.productId}-${item.size}`" class="item-row">
-              <div class="item-icon">☕</div>
+              <div class="item-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(212,160,96,0.9)" stroke-width="1.6" stroke-linecap="round">
+                  <path d="M18 8h2a2 2 0 0 1 0 4h-2"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                </svg>
+              </div>
               <div class="item-info">
                 <div class="item-name">{{ item.name }}</div>
                 <div class="item-meta">{{ item.size }} · × {{ item.qty }}</div>
@@ -189,7 +193,7 @@ onUnmounted(() => clearInterval(refreshTimer))
 }
 .track-hero-inner { max-width: 560px; margin: 0 auto; text-align: center; }
 .track-eyebrow { font-size: 12px; font-weight: 700; color: #d4a060; text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 12px; }
-.track-title   { font-size: clamp(32px,5vw,52px); font-weight: 900; color: #fdf6ec; margin: 0 0 12px; letter-spacing: -1.5px; }
+.track-title   { font-size: clamp(32px,5vw,54px); font-weight: 700; color: #fdf6ec; margin: 0 0 12px; font-family: 'Playfair Display', serif; }
 .track-sub     { font-size: 15px; color: #a8a29e; margin: 0 0 32px; }
 
 .search-bar  { display: flex; gap: 0; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
@@ -253,7 +257,8 @@ onUnmounted(() => clearInterval(refreshTimer))
 .dp-empty { font-size: 13px; color: #a8a29e; font-style: italic; }
 
 .item-row  { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #faf7f2; }
-.item-icon { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #1a0a04, #3d1a08); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.item-icon { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #1a0a04, #3d1a08); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.item-icon svg { width: 20px; height: 20px; }
 .item-info { flex: 1; min-width: 0; }
 .item-name { font-size: 13px; font-weight: 600; color: #1c1917; }
 .item-meta { font-size: 11px; color: #a8a29e; }

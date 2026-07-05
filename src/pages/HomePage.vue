@@ -68,12 +68,12 @@ onMounted(() => {
 })
 
 const quickActions = [
-  { icon: '➕', label: 'Add Product', to: '/menu' },
-  { icon: '📋', label: 'View Orders', to: '/orders' },
-  { icon: '🎨', label: 'Cup Designer', to: '/cup-designer' },
-  { icon: '📦', label: 'Packaging', to: '/packaging-designer' },
-  { icon: '📅', label: 'Schedule', to: '/schedule' },
-  { icon: '🏷', label: 'Promo Codes', to: '/promo-codes' },
+  { svg: `<path d="M12 5v14M5 12h14"/>`, label: 'Add Product',   to: '/menu' },
+  { svg: `<path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>`, label: 'View Orders',  to: '/orders' },
+  { svg: `<circle cx="12" cy="12" r="10"/><path d="M8 12h4l3-7"/>`, label: 'Cup Designer',  to: '/cup-designer' },
+  { svg: `<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>`, label: 'Packaging',    to: '/packaging-designer' },
+  { svg: `<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>`, label: 'Schedule',     to: '/schedule' },
+  { svg: `<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>`, label: 'Promo Codes',  to: '/promo-codes' },
 ]
 </script>
 
@@ -168,7 +168,7 @@ const quickActions = [
             v-for="a in quickActions" :key="a.label"
             :to="a.to" class="action-btn"
           >
-            <span class="action-icon">{{ a.icon }}</span>
+            <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-html="a.svg"></svg>
             <span class="action-label">{{ a.label }}</span>
           </RouterLink>
         </div>
@@ -269,7 +269,7 @@ const quickActions = [
   display: flex; align-items: flex-start; justify-content: space-between;
   flex-wrap: wrap; gap: 16px;
 }
-.dash-title { font-size: 26px; font-weight: 900; color: #1c1917; margin: 0 0 4px; }
+.dash-title { font-size: 28px; font-weight: 700; color: #1c1917; margin: 0 0 4px; font-family: 'Playfair Display', serif; }
 .dash-sub   { font-size: 13px; color: #a8a29e; margin: 0; }
 
 .period-bar {
@@ -350,7 +350,7 @@ const quickActions = [
   cursor: pointer;
 }
 .action-btn:hover { border-color: #d4a060; background: #fff9f0; transform: translateY(-1px); }
-.action-icon  { font-size: 20px; }
+.action-icon  { width: 22px; height: 22px; color: #d4a060; flex-shrink: 0; }
 .action-label { font-size: 11px; font-weight: 700; color: #44403c; text-align: center; }
 
 .live-strip {

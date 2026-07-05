@@ -11,10 +11,15 @@ const cart = useCartStore()
       <h1 class="page-title">Your Order</h1>
 
       <div v-if="cart.items.length === 0" class="empty">
-        <div class="empty-icon">☕</div>
-        <h2>Your order is empty</h2>
-        <p>Add some items from our menu to get started.</p>
-        <RouterLink to="/shop/menu" class="browse-btn">Browse Menu</RouterLink>
+        <svg class="empty-cup" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 30h60l-7 52H27L20 30z" fill="#f5f0ea" stroke="#d4a060" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="17" y="24" width="66" height="9" rx="4.5" fill="#ede8e1" stroke="#d4a060" stroke-width="2"/>
+          <path d="M70 44 Q86 44 86 56 Q86 68 70 68" stroke="#d4a060" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M40 14 Q43 7 40 2M50 11 Q53 4 50 0M60 14 Q63 7 60 2" stroke="#c8813a" stroke-width="2.5" stroke-linecap="round" opacity="0.45"/>
+        </svg>
+        <h2>Your basket is empty</h2>
+        <p>Discover our award-winning coffee, pastries and London sweets.</p>
+        <RouterLink to="/shop/menu" class="browse-btn">Browse Menu →</RouterLink>
       </div>
 
       <div v-else class="cart-layout">
@@ -65,14 +70,14 @@ const cart = useCartStore()
 <style scoped>
 .cart-page { min-height: 60vh; background: #faf7f2; }
 .page-inner { max-width: 1100px; margin: 0 auto; padding: 40px 24px 60px; }
-.page-title { font-size: 28px; font-weight: 900; color: #1c1917; margin-bottom: 28px; }
+.page-title { font-size: 32px; font-weight: 700; color: #1c1917; margin-bottom: 28px; font-family: 'Playfair Display', serif; }
 
 .empty { text-align: center; padding: 80px 0; }
-.empty-icon { font-size: 64px; margin-bottom: 16px; }
-.empty h2 { font-size: 22px; font-weight: 700; color: #1c1917; margin-bottom: 8px; }
-.empty p { color: #78716c; margin-bottom: 24px; }
-.browse-btn { display: inline-block; background: #d4a060; color: #fff; border-radius: 10px; padding: 12px 28px; font-weight: 700; text-decoration: none; transition: background 0.15s; }
-.browse-btn:hover { background: #c8813a; }
+.empty-cup { width: 96px; height: 96px; margin: 0 auto 20px; }
+.empty h2 { font-size: 24px; font-weight: 700; color: #1c1917; margin: 0 0 10px; font-family: 'Playfair Display', serif; }
+.empty p { color: #78716c; margin: 0 0 28px; line-height: 1.65; max-width: 320px; margin-left: auto; margin-right: auto; }
+.browse-btn { display: inline-block; background: linear-gradient(135deg, #c8813a, #d4a060); color: #fff; border-radius: 12px; padding: 13px 32px; font-weight: 700; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 16px rgba(200,129,58,0.35); }
+.browse-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,129,58,0.5); }
 
 .cart-layout { display: grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start; }
 @media (max-width: 780px) { .cart-layout { grid-template-columns: 1fr; } }

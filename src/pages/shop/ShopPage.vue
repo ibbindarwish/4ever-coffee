@@ -198,7 +198,12 @@ function closeDetail() { detailProduct.value = null }
         </article>
 
         <div v-if="filtered.length === 0" class="empty-state">
-          <div class="empty-icon">☕</div>
+          <svg class="empty-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 24h48l-6 42H22L16 24z" fill="#d4a060" stroke="#1c1917" stroke-width="2" stroke-linejoin="round"/>
+            <rect x="13" y="20" width="54" height="7" rx="3.5" fill="#c8813a" stroke="#1c1917" stroke-width="2"/>
+            <path d="M56 35 Q70 35 70 46 Q70 55 56 55" stroke="#1c1917" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <path d="M33 10 Q35 5 33 1M40 8 Q42 3 40 0M47 10 Q49 5 47 1" stroke="#c8813a" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          </svg>
           <p class="empty-title">Nothing found</p>
           <p class="empty-sub">Try a different category or clear your search.</p>
           <button class="empty-reset" @click="search = ''; category = 'All'">Reset filters</button>
@@ -274,7 +279,7 @@ function closeDetail() { detailProduct.value = null }
 .banner-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,4,2,0.88) 0%, rgba(10,4,2,0.55) 55%, rgba(10,4,2,0.2) 100%); }
 .banner-inner { position: relative; z-index: 2; max-width: 1200px; width: 100%; margin: 0 auto; padding: 0 28px 36px; }
 .banner-eyebrow { font-size: 11px; font-weight: 700; color: #d4a060; text-transform: uppercase; letter-spacing: 0.14em; margin: 0 0 10px; }
-.banner-title   { font-size: clamp(30px, 5vw, 48px); font-weight: 900; color: #fff; margin: 0 0 8px; letter-spacing: -1.5px; line-height: 1.05; }
+.banner-title   { font-size: clamp(30px, 5vw, 52px); font-weight: 700; color: #fff; margin: 0 0 8px; letter-spacing: -0.5px; line-height: 1.08; font-family: 'Playfair Display', Georgia, serif; }
 .banner-sub     { font-size: 15px; color: rgba(255,255,255,0.6); margin: 0; }
 
 /* ── PAGE INNER ──────────────────────────────────────────── */
@@ -314,17 +319,26 @@ function closeDetail() { detailProduct.value = null }
 @media (max-width: 480px)  { .products-grid { grid-template-columns: 1fr; } }
 
 /* ── CARD ─────────────────────────────────────────────────── */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 .card {
   background: #fff;
   border-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 20px rgba(0,0,0,0.07);
   transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1), box-shadow 0.3s ease, border-color 0.2s;
   cursor: default;
   border: 1.5px solid transparent;
+  animation: cardIn 0.45s ease both;
 }
+.card:nth-child(4n+1) { animation-delay: 0.04s; }
+.card:nth-child(4n+2) { animation-delay: 0.10s; }
+.card:nth-child(4n+3) { animation-delay: 0.16s; }
+.card:nth-child(4n+4) { animation-delay: 0.22s; }
 .card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 32px rgba(200,129,58,0.15), 0 24px 48px rgba(0,0,0,0.1);
@@ -363,9 +377,9 @@ function closeDetail() { detailProduct.value = null }
 
 /* badges — top right */
 .badge-group { position: absolute; top: 12px; right: 12px; z-index: 3; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
-.badge { font-size: 10px; font-weight: 800; border-radius: 6px; padding: 4px 8px; letter-spacing: 0.04em; }
-.badge-new  { background: #dcfce7; color: #15803d; }
-.badge-sale { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.badge { font-size: 10px; font-weight: 800; border-radius: 20px; padding: 4px 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+.badge-new  { background: #15803d; color: #fff; }
+.badge-sale { background: #dc2626; color: #fff; }
 
 /* stock tags — bottom */
 .stock-tag {
@@ -380,7 +394,7 @@ function closeDetail() { detailProduct.value = null }
 .card-body { padding: 16px 18px 20px; display: flex; flex-direction: column; flex: 1; }
 
 .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-.card-name { font-size: 16px; font-weight: 800; color: #1c1917; line-height: 1.25; flex: 1; margin: 0; }
+.card-name { font-size: 17px; font-weight: 700; color: #1c1917; line-height: 1.25; flex: 1; margin: 0; font-family: 'Playfair Display', Georgia, serif; }
 
 .card-rating { display: flex; align-items: center; gap: 3px; flex-shrink: 0; margin-top: 2px; }
 .rating-val   { font-size: 12px; font-weight: 700; color: #1c1917; }
@@ -435,11 +449,11 @@ function closeDetail() { detailProduct.value = null }
 
 /* ── EMPTY STATE ─────────────────────────────────────────── */
 .empty-state { grid-column: 1/-1; text-align: center; padding: 80px 24px; }
-.empty-icon  { font-size: 52px; margin-bottom: 16px; }
-.empty-title { font-size: 20px; font-weight: 800; color: #1c1917; margin: 0 0 8px; }
-.empty-sub   { font-size: 14px; color: #a8a29e; margin: 0 0 24px; }
-.empty-reset { background: #1c1917; color: #fff; border: none; border-radius: 10px; padding: 11px 24px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
-.empty-reset:hover { background: #c8813a; }
+.empty-icon  { width: 80px; height: 80px; margin: 0 auto 20px; opacity: 0.35; }
+.empty-title { font-size: 22px; font-weight: 700; color: #1c1917; margin: 0 0 8px; font-family: 'Playfair Display', serif; }
+.empty-sub   { font-size: 14px; color: #a8a29e; margin: 0 0 28px; line-height: 1.6; }
+.empty-reset { background: #1c1917; color: #fff; border: none; border-radius: 10px; padding: 12px 28px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.18s; letter-spacing: 0.01em; }
+.empty-reset:hover { background: #c8813a; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(200,129,58,0.35); }
 
 /* ── CLICKABLE NAME ──────────────────────────────────────── */
 .link-name { cursor: pointer; }
@@ -473,7 +487,7 @@ function closeDetail() { detailProduct.value = null }
 .modal-cat { position: absolute; bottom: 14px; left: 16px; z-index: 3; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; background: rgba(0,0,0,0.55); color: #fff; border-radius: 20px; padding: 4px 12px; }
 
 .modal-body { padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 14px; }
-.modal-name   { font-size: 24px; font-weight: 900; color: #1c1917; margin: 0; letter-spacing: -0.5px; }
+.modal-name   { font-size: 26px; font-weight: 700; color: #1c1917; margin: 0; font-family: 'Playfair Display', Georgia, serif; }
 .modal-flavor { font-size: 13px; color: #a8a29e; font-style: italic; margin: 0; }
 .modal-desc   { font-size: 14px; color: #57534e; line-height: 1.65; margin: 0; }
 

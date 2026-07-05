@@ -221,7 +221,7 @@ function proceedToPayment() {
 <style scoped>
 .checkout-page  { min-height: 60vh; background: #faf7f2; }
 .page-inner     { max-width: 1040px; margin: 0 auto; padding: 40px 24px 72px; }
-.page-title     { font-size: 26px; font-weight: 900; color: #1c1917; margin-bottom: 28px; }
+.page-title     { font-size: 30px; font-weight: 700; color: #1c1917; margin-bottom: 28px; font-family: 'Playfair Display', serif; }
 
 .checkout-layout { display: grid; grid-template-columns: 1fr 310px; gap: 28px; align-items: start; }
 @media (max-width: 740px) { .checkout-layout { grid-template-columns: 1fr; } }
