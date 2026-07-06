@@ -130,10 +130,6 @@ const ssp  = computed(() => props.subSpacing   ?? 2)
       <path d="M87,138 L61,161 L100,161 M87,138 L87,171"
             fill="none" :stroke="logoColor" stroke-width="4.2"
             stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- Signature tail — swooshes off the ring, echoing the sketch -->
-      <path d="M63,172 Q80,180 98,172 Q108,167 117,155"
-            fill="none" :stroke="logoColor" stroke-width="2.4"
-            stroke-linecap="round" opacity="0.9"/>
     </template>
 
     <!-- ── SLEEVE TEXT ── -->
