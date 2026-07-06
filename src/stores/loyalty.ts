@@ -91,14 +91,19 @@ export const useLoyaltyStore = defineStore('loyalty', () => {
     if (isCollectionComplete.value && !hasCollectorBadge.value) {
       collectorBadgeDate.value = ev.date
       localStorage.setItem(LS_BADGE_KEY, ev.date)
-      events.value.push({
-        id:          crypto.randomUUID(),
-        date:        ev.date,
-        description: '🏅 The 4 Collection complete — 4ever Member bonus',
-        points:      COLLECTION_BONUS,
-      })
+      addBonus(COLLECTION_BONUS, '🏅 The 4 Collection complete — 4ever Member bonus')
     }
 
+    persist()
+  }
+
+  function addBonus(points: number, description: string) {
+    events.value.push({
+      id:          crypto.randomUUID(),
+      date:        new Date().toISOString().split('T')[0],
+      description,
+      points,
+    })
     persist()
   }
 
@@ -121,7 +126,7 @@ export const useLoyaltyStore = defineStore('loyalty', () => {
 
   return {
     events, balance, tier, nextTier, canRedeem,
-    earnFromOrder, redeem,
+    earnFromOrder, redeem, addBonus,
     POINTS_PER_POUND, REDEEM_RATE, REDEEM_VALUE,
     seasonalItems, collectedSeasonalIds, isCollectionComplete, hasCollectorBadge, collectorBadgeDate,
     COLLECTION_BONUS,

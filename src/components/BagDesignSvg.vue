@@ -145,10 +145,6 @@ const fs = computed(() => ({
       <path d="M142,190 L100,232 L162,232 M142,190 L142,254"
             fill="none" :stroke="logoColor" :stroke-width="fs.logoStroke * 1.6"
             stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- Signature tail — swooshes off the ring, echoing the sketch -->
-      <path d="M95,260 Q130,276 167,260 Q188,249 207,224"
-            fill="none" :stroke="logoColor" :stroke-width="fs.logoStroke * 0.9"
-            stroke-linecap="round" opacity="0.9"/>
     </g>
 
     <!-- ══════════════════════════════════════════════════════════════ -->

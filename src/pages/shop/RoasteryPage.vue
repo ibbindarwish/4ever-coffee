@@ -2,8 +2,12 @@
 import { ref, computed } from 'vue'
 import type { MenuItem } from '../../stores/products'
 import { useCartStore } from '../../stores/cart'
+import { useLoyaltyStore } from '../../stores/loyalty'
+import { useRoasteryVotesStore } from '../../stores/roasteryVotes'
 
-const cart = useCartStore()
+const cart    = useCartStore()
+const loyalty = useLoyaltyStore()
+const votes   = useRoasteryVotesStore()
 
 type RoastLevel = 'Light' | 'Medium-Light' | 'Medium' | 'Medium-Dark' | 'Dark'
 type WeightOpt  = '250g' | '500g' | '1kg' | '5kg'
@@ -13,6 +17,13 @@ interface RoasteryBean {
   roast: RoastLevel; score: number; altitude: string; process: string
   contents: string[]; ratio: string; ratioNote: string
   basePrice: number; roastDate: string; color: string; gradient: string
+  // Farm-to-Cup Batch Passport
+  batchId: string; farmer: string; farmerAvatar: string
+  harvestDate: string; farmStory: string
+  // Direct Trade Impact Ledger
+  premiumPaid: number; impact: string; kgSourcedYTD: number
+  // World Cupping Table
+  baseVotes: number
 }
 
 const WEIGHT_MULTI: Record<WeightOpt, number> = { '250g': 1, '500g': 1.80, '1kg': 3.20, '5kg': 13.50 }
@@ -39,6 +50,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 15', ratioNote: 'Pour Over / V60 · 60 g per litre',
     basePrice: 12.00, roastDate: '01 Jul 2026', color: '#c8813a',
     gradient: 'linear-gradient(145deg,#6b3010,#a05020)',
+    batchId: '4EC-ETH-0701A', farmer: 'Gedeo Zone Smallholder Cooperative', farmerAvatar: '👨🏾‍🌾',
+    harvestDate: '15 Dec 2025', farmStory: 'Hand-picked at peak ripeness by 400+ smallholder families across the Gedeo highlands, then washed within hours of harvest to lock in clarity.',
+    premiumPaid: 3.20, impact: 'Funds a primary school for 120 children in Gedeo Zone', baseVotes: 812, kgSourcedYTD: 4200,
   },
   {
     id: 9002, name: 'Colombian Supremo', flag: '🇨🇴', country: 'Colombia',
@@ -48,6 +62,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 15', ratioNote: 'Filter / Espresso · 60 g per litre',
     basePrice: 9.50, roastDate: '29 Jun 2026', color: '#9a5020',
     gradient: 'linear-gradient(145deg,#4a2010,#7a3818)',
+    batchId: '4EC-COL-0629B', farmer: 'Finca La Esperanza, Huila', farmerAvatar: '👩🏽‍🌾',
+    harvestDate: '20 Oct 2025', farmStory: 'A third-generation family farm on the slopes of Huila, replanting native shade trees between rows to protect the soil and local bird life.',
+    premiumPaid: 2.10, impact: 'Funds reforestation of 3,000 native shade trees', baseVotes: 540, kgSourcedYTD: 6100,
   },
   {
     id: 9003, name: 'Kenya AA', flag: '🇰🇪', country: 'Kenya',
@@ -57,6 +74,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 16', ratioNote: 'Aeropress / Chemex · 62 g per litre',
     basePrice: 11.00, roastDate: '28 Jun 2026', color: '#b07030',
     gradient: 'linear-gradient(145deg,#583010,#8a4820)',
+    batchId: '4EC-KEN-0628C', farmer: 'Nyeri Hill Growers Union', farmerAvatar: '👨🏿‍🌾',
+    harvestDate: '05 Nov 2025', farmStory: 'Double-washed at a cooperative-run station in Nyeri County, where over 900 growers pool their harvest to fund shared processing equipment.',
+    premiumPaid: 2.80, impact: 'Funds a clean water well serving 60 families', baseVotes: 705, kgSourcedYTD: 5300,
   },
   {
     id: 9004, name: 'Guatemala Antigua', flag: '🇬🇹', country: 'Guatemala',
@@ -66,6 +86,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 15', ratioNote: 'Drip / Espresso · 60 g per litre',
     basePrice: 9.00, roastDate: '27 Jun 2026', color: '#8a4518',
     gradient: 'linear-gradient(145deg,#3a1a08,#6a3010)',
+    batchId: '4EC-GTM-0627D', farmer: 'Finca El Volcán, Antigua', farmerAvatar: '👨🏽‍🌾',
+    harvestDate: '10 Jan 2026', farmStory: 'Grown in volcanic soil beneath Fuego and Acatenango, this family finca has supplied specialty lots for three generations.',
+    premiumPaid: 1.90, impact: 'Funds scholarships for 8 farm-worker children', baseVotes: 398, kgSourcedYTD: 3400,
   },
   {
     id: 9005, name: 'Sumatra Mandheling', flag: '🇮🇩', country: 'Indonesia',
@@ -75,6 +98,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 12', ratioNote: 'French Press / Moka Pot · 83 g per litre',
     basePrice: 8.50, roastDate: '01 Jul 2026', color: '#6a2a10',
     gradient: 'linear-gradient(145deg,#2a0e06,#4a1c0a)',
+    batchId: '4EC-IDN-0701E', farmer: 'Lintong Smallholder Collective', farmerAvatar: '👨🏾‍🌾',
+    harvestDate: '01 Sep 2025', farmStory: 'Wet-hulled the traditional Sumatran way just hours after picking, giving this cup its signature heavy body and low acidity.',
+    premiumPaid: 1.60, impact: 'Funds tools & training for organic transition', baseVotes: 312, kgSourcedYTD: 2900,
   },
   {
     id: 9006, name: 'Brazilian Santos', flag: '🇧🇷', country: 'Brazil',
@@ -84,6 +110,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 2', ratioNote: 'Espresso / Flat White · 18 g dose',
     basePrice: 8.00, roastDate: '26 Jun 2026', color: '#7a3a10',
     gradient: 'linear-gradient(145deg,#321408,#5a2810)',
+    batchId: '4EC-BRA-0626F', farmer: 'Fazenda Boa Vista, Minas Gerais', farmerAvatar: '👩🏽‍🌾',
+    harvestDate: '25 Jun 2025', farmStory: 'A natural-process estate on the high plains of Minas Gerais, sun-dried on raised beds for even, controlled fermentation.',
+    premiumPaid: 1.40, impact: 'Supports a fair-wage harvest labour programme', baseVotes: 289, kgSourcedYTD: 3800,
   },
   {
     id: 9007, name: 'Panama Geisha', flag: '🇵🇦', country: 'Panama',
@@ -93,6 +122,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 17', ratioNote: 'Pour Over / Siphon · 58 g per litre',
     basePrice: 22.00, roastDate: '02 Jul 2026', color: '#d4a060',
     gradient: 'linear-gradient(145deg,#7a4818,#b07030)',
+    batchId: '4EC-PAN-0702G', farmer: 'Hacienda La Esmeralda, Chiriquí', farmerAvatar: '👨🏽‍🌾',
+    harvestDate: '01 Feb 2026', farmStory: 'The world-renowned Geisha varietal grown at altitude in Chiriquí, hand-sorted lot by lot to protect its prized floral micro-lot character.',
+    premiumPaid: 6.50, impact: 'Funds micro-lot preservation & a biodiversity corridor', baseVotes: 963, kgSourcedYTD: 850,
   },
   {
     id: 9008, name: 'Rwanda Bourbon', flag: '🇷🇼', country: 'Rwanda',
@@ -102,6 +134,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 15', ratioNote: 'V60 / Cold Brew · 60 g per litre',
     basePrice: 10.50, roastDate: '30 Jun 2026', color: '#a85820',
     gradient: 'linear-gradient(145deg,#4a2010,#7a3818)',
+    batchId: '4EC-RWA-0630H', farmer: 'Musasa Washing Station Co-op', farmerAvatar: '👩🏾‍🌾',
+    harvestDate: '12 Apr 2025', farmStory: 'Fully-washed Red Bourbon from a women-majority cooperative in Western Province, known for its bright red-fruit clarity.',
+    premiumPaid: 2.50, impact: 'Funds maternal healthcare access for 200 families', baseVotes: 611, kgSourcedYTD: 4700,
   },
   {
     id: 9009, name: 'Yemen Mokha', flag: '🇾🇪', country: 'Yemen',
@@ -111,6 +146,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 13', ratioNote: 'Turkish / Moka Pot · 77 g per litre',
     basePrice: 14.00, roastDate: '25 Jun 2026', color: '#7a4020',
     gradient: 'linear-gradient(145deg,#3a1810,#6a2c18)',
+    batchId: '4EC-YEM-0625I', farmer: 'Haraz Mountain Growers', farmerAvatar: '👨🏽‍🌾',
+    harvestDate: '20 Aug 2025', farmStory: 'Terrace-farmed on ancient stone steps in the Haraz Mountains using techniques passed down for over 500 years.',
+    premiumPaid: 4.10, impact: 'Preserves 500-year-old heirloom terrace farming', baseVotes: 447, kgSourcedYTD: 1600,
   },
   {
     id: 9010, name: 'Vietnam Robusta', flag: '🇻🇳', country: 'Vietnam',
@@ -120,6 +158,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 10', ratioNote: 'Phin Filter / Iced Coffee · 100 g per litre',
     basePrice: 7.00, roastDate: '30 Jun 2026', color: '#5a2208',
     gradient: 'linear-gradient(145deg,#1e0a04,#3a1408)',
+    batchId: '4EC-VNM-0630J', farmer: 'Dak Lak Family Farms', farmerAvatar: '👨🏻‍🌾',
+    harvestDate: '15 Nov 2025', farmStory: 'Robusta grown on the red-soil plateau of Dak Lak, sun-dried by family-run smallholdings supplying Vietnam\'s highlands.',
+    premiumPaid: 1.10, impact: 'Funds irrigation upgrades for 30 farms', baseVotes: 176, kgSourcedYTD: 5900,
   },
   {
     id: 9011, name: 'Peru Organic', flag: '🇵🇪', country: 'Peru',
@@ -129,6 +170,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 15', ratioNote: 'Drip / Cold Brew · 60 g per litre',
     basePrice: 9.50, roastDate: '28 Jun 2026', color: '#8a4818',
     gradient: 'linear-gradient(145deg,#3a1808,#6a2e12)',
+    batchId: '4EC-PER-0628K', farmer: 'Cooperativa Junín Orgánico', farmerAvatar: '👩🏽‍🌾',
+    harvestDate: '10 Jun 2025', farmStory: 'Certified-organic smallholdings across Junín & Cajamarca, farmed pesticide-free at altitude beside the Andean cloud forest.',
+    premiumPaid: 2.00, impact: 'Certifies 15 new farms organic, pesticide-free', baseVotes: 358, kgSourcedYTD: 3100,
   },
   {
     id: 9012, name: 'Mexico Chiapas', flag: '🇲🇽', country: 'Mexico',
@@ -138,6 +182,9 @@ const beans: RoasteryBean[] = [
     ratio: '1 : 15', ratioNote: 'Drip / Espresso · 60 g per litre',
     basePrice: 8.50, roastDate: '27 Jun 2026', color: '#9a5020',
     gradient: 'linear-gradient(145deg,#3a1a08,#6a3010)',
+    batchId: '4EC-MEX-0627L', farmer: 'Comunidad Chiapas Highlands', farmerAvatar: '👩🏽‍🌾',
+    harvestDate: '05 Jan 2026', farmStory: 'A women-led growers\' cooperative in the Chiapas Highlands, shade-grown under native canopy alongside cardamom and banana trees.',
+    premiumPaid: 1.75, impact: 'Funds equipment for a women-led cooperative', baseVotes: 301, kgSourcedYTD: 2700,
   },
 ]
 
@@ -152,10 +199,13 @@ const pricePerHundredG = computed(() => {
     : selWeight.value === '500g' ? 500 : 250
   return (price.value / g * 100).toFixed(2)
 })
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+function parseUKDate(str: string) {
+  const [d, m, y] = str.split(' ')
+  return new Date(+y, MONTHS.indexOf(m), +d)
+}
 const bestBefore = computed(() => {
-  const [d, m, y] = selected.value.roastDate.split(' ')
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-  const date = new Date(+y, MONTHS.indexOf(m), +d)
+  const date = parseUKDate(selected.value.roastDate)
   date.setDate(date.getDate() + 60)
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 })
@@ -163,6 +213,35 @@ const bestBefore = computed(() => {
 const toast        = ref('')
 const toastVisible = ref(false)
 let toastTimer: ReturnType<typeof setTimeout>
+
+// ── Farm-to-Cup Batch Passport ───────────────────────
+const passportBean = ref<RoasteryBean | null>(null)
+function openPassport(b: RoasteryBean) { passportBean.value = b }
+function closePassport() { passportBean.value = null }
+function daysSince(dateStr: string) {
+  const ms = Date.now() - parseUKDate(dateStr).getTime()
+  return Math.max(0, Math.floor(ms / 86400000))
+}
+
+// ── Direct Trade Impact Ledger ───────────────────────
+const totalPremiumPaid = computed(() =>
+  beans.reduce((sum, b) => sum + b.premiumPaid * b.kgSourcedYTD, 0)
+)
+const totalKgSourced = computed(() => beans.reduce((sum, b) => sum + b.kgSourcedYTD, 0))
+
+// ── World Cupping Table ───────────────────────────────
+const leaderboard = computed(() => [...beans].sort((a, b) => b.score - a.score))
+function voteCount(b: RoasteryBean) {
+  return b.baseVotes + (votes.votedOriginId === b.id ? 1 : 0)
+}
+function vote(b: RoasteryBean) {
+  if (!votes.castVote(b.id)) return
+  loyalty.addBonus(votes.VOTE_BONUS, `☕ Voted for ${b.name} in this month's cupping table`)
+  clearTimeout(toastTimer)
+  toast.value = `Vote cast for ${b.flag} ${b.name}! +${votes.VOTE_BONUS} pts`
+  toastVisible.value = true
+  toastTimer = setTimeout(() => toastVisible.value = false, 3000)
+}
 
 function addToCart() {
   const b = selected.value
@@ -226,6 +305,9 @@ function addToCart() {
             Add {{ selWeight }} to Cart
           </button>
           <p class="freshness-note">🔒 Nitrogen-sealed · ♻ Compostable bag · 🚚 48-hr dispatch</p>
+          <button class="trace-btn" @click="openPassport(selected)">
+            🔎 Trace This Batch — {{ selected.batchId }}
+          </button>
         </div>
 
         <!-- Center: CSS Bag Mockup -->
@@ -402,7 +484,116 @@ function addToCart() {
               <span class="tile-score">{{ b.score }}/100</span>
               <span class="tile-price">from £{{ b.basePrice.toFixed(2) }}</span>
             </div>
+            <button class="tile-trace" @click.stop="openPassport(b)" title="Trace this batch">🔎</button>
           </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FARM-TO-CUP BATCH PASSPORT (modal) ───────────────────── -->
+    <Transition name="passport-fade">
+      <div v-if="passportBean" class="passport-overlay" @click.self="closePassport">
+        <div class="passport-card">
+          <button class="passport-close" @click="closePassport">✕</button>
+
+          <div class="passport-head">
+            <div class="passport-avatar">{{ passportBean.farmerAvatar }}</div>
+            <div>
+              <div class="passport-batch">Batch {{ passportBean.batchId }}</div>
+              <h3 class="passport-bean-name">{{ passportBean.flag }} {{ passportBean.name }}</h3>
+              <div class="passport-farmer">{{ passportBean.farmer }}</div>
+            </div>
+          </div>
+
+          <p class="passport-story">{{ passportBean.farmStory }}</p>
+
+          <div class="passport-grid">
+            <div class="passport-stat">
+              <div class="passport-stat-label">Harvested</div>
+              <div class="passport-stat-val">{{ passportBean.harvestDate }}</div>
+            </div>
+            <div class="passport-stat">
+              <div class="passport-stat-label">Roasted</div>
+              <div class="passport-stat-val">{{ passportBean.roastDate }}</div>
+            </div>
+            <div class="passport-stat">
+              <div class="passport-stat-label">Freshness</div>
+              <div class="passport-stat-val fresh">{{ daysSince(passportBean.roastDate) }} days since roast</div>
+            </div>
+            <div class="passport-stat">
+              <div class="passport-stat-label">Cupping Score</div>
+              <div class="passport-stat-val">{{ passportBean.score }}/100</div>
+            </div>
+          </div>
+
+          <div class="passport-impact">
+            <span class="passport-impact-icon">🌍</span>
+            <div>
+              <div class="passport-impact-label">Direct Trade Impact</div>
+              <div class="passport-impact-desc">{{ passportBean.impact }} · £{{ passportBean.premiumPaid.toFixed(2) }}/kg above commodity price</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- ── DIRECT TRADE IMPACT LEDGER ───────────────────────────── -->
+    <section class="ledger-section">
+      <div class="ledger-inner">
+        <p class="section-eyebrow">Radical Transparency</p>
+        <h2 class="ledger-title">Direct Trade Impact Ledger</h2>
+        <p class="ledger-sub">Every origin we roast is paid above commodity price, tracked publicly — not just claimed on a bag.</p>
+
+        <div class="ledger-total">
+          <div class="ledger-total-figure">£{{ totalPremiumPaid.toLocaleString('en-GB', { maximumFractionDigits: 0 }) }}</div>
+          <div class="ledger-total-label">paid above commodity price so far this year, across {{ totalKgSourced.toLocaleString('en-GB') }} kg sourced from {{ beans.length }} origins</div>
+        </div>
+
+        <div class="ledger-list">
+          <div v-for="b in beans" :key="b.id" class="ledger-row">
+            <div class="ledger-flag">{{ b.flag }}</div>
+            <div class="ledger-info">
+              <div class="ledger-name">{{ b.name }} <span class="ledger-farmer">— {{ b.farmer }}</span></div>
+              <div class="ledger-impact">{{ b.impact }}</div>
+            </div>
+            <div class="ledger-premium">+£{{ b.premiumPaid.toFixed(2) }}<span>/kg</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── WORLD CUPPING TABLE ──────────────────────────────────── -->
+    <section class="cupping-section">
+      <div class="cupping-inner">
+        <p class="section-eyebrow" style="color:#8b5cf6;">Live Leaderboard</p>
+        <h2 class="cupping-title">World Cupping Table</h2>
+        <p class="cupping-sub">
+          Ranked by SCA cupping score. Cast one vote a month for the origin you want us to feature next —
+          voting earns you {{ votes.VOTE_BONUS }} loyalty points.
+        </p>
+
+        <div class="cupping-list">
+          <div v-for="(b, i) in leaderboard" :key="b.id" class="cupping-row" :class="{ voted: votes.votedOriginId === b.id }">
+            <div class="cupping-rank">{{ i + 1 }}</div>
+            <div class="cupping-flag">{{ b.flag }}</div>
+            <div class="cupping-info">
+              <div class="cupping-name">{{ b.name }}</div>
+              <div class="cupping-country">{{ b.country }}</div>
+            </div>
+            <div class="cupping-score-wrap">
+              <div class="cupping-score-bar"><div class="cupping-score-fill" :style="{ width: b.score + '%' }"></div></div>
+              <span class="cupping-score-num">{{ b.score }}</span>
+            </div>
+            <div class="cupping-votes">{{ voteCount(b).toLocaleString('en-GB') }} votes</div>
+            <button
+              class="cupping-vote-btn"
+              :disabled="votes.hasVoted()"
+              :class="{ voted: votes.votedOriginId === b.id }"
+              @click="vote(b)"
+            >
+              {{ votes.votedOriginId === b.id ? '✓ Voted' : votes.hasVoted() ? 'Voted' : 'Vote' }}
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -1011,7 +1202,7 @@ function addToCart() {
 
 .bean-tile {
   background: #faf7f2; border: 1.5px solid #f0ebe4; border-radius: 12px;
-  padding: 12px 10px 10px; cursor: pointer; transition: all 0.2s;
+  padding: 12px 10px 10px; cursor: pointer; transition: all 0.2s; position: relative;
   text-align: left; font: inherit; display: flex; flex-direction: column; gap: 4px;
 }
 .bean-tile:hover  { border-color: #d4a060; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,160,96,0.14); }
@@ -1024,6 +1215,118 @@ function addToCart() {
 .tile-bottom  { display: flex; justify-content: space-between; align-items: center; }
 .tile-score   { font-size: 10px; font-weight: 700; color: #78716c; }
 .tile-price   { font-size: 10px; font-weight: 700; color: #d4a060; }
+.tile-trace {
+  position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(255,255,255,0.85); border: 1px solid #f0ebe4; font-size: 10px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;
+  opacity: 0; transition: opacity 0.15s;
+}
+.bean-tile:hover .tile-trace { opacity: 1; }
+
+/* ── TRACE BUTTON (hero) ─────────────────────── */
+.trace-btn {
+  display: block; width: 100%; margin-top: 10px; padding: 10px;
+  background: rgba(212,160,96,0.1); border: 1px solid rgba(212,160,96,0.3); border-radius: 10px;
+  color: #d4a060; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.trace-btn:hover { background: rgba(212,160,96,0.18); }
+
+/* ── FARM-TO-CUP BATCH PASSPORT (modal) ──────── */
+.passport-overlay {
+  position: fixed; inset: 0; background: rgba(13,6,3,0.7); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; z-index: 999; padding: 20px;
+}
+.passport-fade-enter-active, .passport-fade-leave-active { transition: opacity 0.25s; }
+.passport-fade-enter-from,  .passport-fade-leave-to       { opacity: 0; }
+.passport-card {
+  position: relative; width: 100%; max-width: 480px;
+  background: linear-gradient(160deg, #241209, #150a05);
+  border: 1px solid rgba(212,160,96,0.25); border-radius: 20px; padding: 28px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+}
+.passport-close {
+  position: absolute; top: 16px; right: 16px; width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.08); border: none; color: #d4c4b0; cursor: pointer; font-size: 13px;
+}
+.passport-close:hover { background: rgba(255,255,255,0.16); }
+.passport-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.passport-avatar {
+  width: 52px; height: 52px; border-radius: 50%; background: rgba(212,160,96,0.12);
+  display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0;
+}
+.passport-batch     { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: #d4a060; text-transform: uppercase; }
+.passport-bean-name { font-size: 19px; font-weight: 900; color: #fdf6ec; margin: 2px 0; }
+.passport-farmer    { font-size: 12px; color: #a8927c; }
+.passport-story     { font-size: 13px; line-height: 1.6; color: #d4c4b0; margin: 0 0 18px; }
+.passport-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.passport-stat { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 12px; }
+.passport-stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #8a7862; margin-bottom: 3px; }
+.passport-stat-val   { font-size: 13px; font-weight: 700; color: #fdf6ec; }
+.passport-stat-val.fresh { color: #6ee7b7; }
+.passport-impact {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 12px; padding: 12px 14px;
+}
+.passport-impact-icon  { font-size: 18px; }
+.passport-impact-label { font-size: 11px; font-weight: 700; color: #6ee7b7; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+.passport-impact-desc  { font-size: 12px; color: #c8bca8; line-height: 1.5; }
+
+/* ── DIRECT TRADE IMPACT LEDGER ──────────────── */
+.ledger-section { padding: 80px 24px; background: #faf7f2; }
+.ledger-inner   { max-width: 900px; margin: 0 auto; text-align: center; }
+.ledger-title   { font-size: 30px; font-weight: 900; color: #1c1917; margin: 0 0 10px; letter-spacing: -0.5px; }
+.ledger-sub     { font-size: 14px; color: #78716c; max-width: 560px; margin: 0 auto 32px; line-height: 1.6; }
+.ledger-total {
+  background: linear-gradient(135deg, #1c0f06, #2c1810); border-radius: 20px;
+  padding: 32px 24px; margin-bottom: 32px;
+}
+.ledger-total-figure { font-size: 44px; font-weight: 900; color: #d4a060; letter-spacing: -1px; }
+.ledger-total-label  { font-size: 13px; color: #d4c4b0; margin-top: 6px; max-width: 460px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+.ledger-list { display: flex; flex-direction: column; gap: 2px; text-align: left; }
+.ledger-row {
+  display: flex; align-items: center; gap: 14px; background: #fff;
+  border: 1px solid #f0ebe4; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px;
+}
+.ledger-flag { font-size: 26px; flex-shrink: 0; }
+.ledger-info { flex: 1; min-width: 0; }
+.ledger-name   { font-size: 13px; font-weight: 700; color: #1c1917; }
+.ledger-farmer { font-weight: 500; color: #a8a29e; }
+.ledger-impact { font-size: 12px; color: #78716c; margin-top: 2px; }
+.ledger-premium { font-size: 15px; font-weight: 900; color: #16a34a; white-space: nowrap; }
+.ledger-premium span { font-size: 11px; font-weight: 600; color: #78716c; }
+
+/* ── WORLD CUPPING TABLE ──────────────────────── */
+.cupping-section { padding: 80px 24px; background: #1a0a04; }
+.cupping-inner    { max-width: 900px; margin: 0 auto; text-align: center; }
+.cupping-title    { font-size: 30px; font-weight: 900; color: #fdf6ec; margin: 0 0 10px; letter-spacing: -0.5px; }
+.cupping-sub      { font-size: 14px; color: #a8927c; max-width: 560px; margin: 0 auto 32px; line-height: 1.6; }
+.cupping-list { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.cupping-row {
+  display: grid; grid-template-columns: 24px 30px 1fr 120px 90px 84px; align-items: center; gap: 12px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px 16px;
+}
+.cupping-row.voted { border-color: rgba(212,160,96,0.4); background: rgba(212,160,96,0.06); }
+@media (max-width: 700px) {
+  .cupping-row { grid-template-columns: 20px 26px 1fr 80px; }
+  .cupping-votes, .cupping-vote-btn { display: none; }
+}
+.cupping-rank { font-size: 13px; font-weight: 900; color: #8a7862; }
+.cupping-flag { font-size: 20px; }
+.cupping-name    { font-size: 13px; font-weight: 700; color: #fdf6ec; }
+.cupping-country { font-size: 11px; color: #8a7862; }
+.cupping-score-wrap { display: flex; align-items: center; gap: 8px; }
+.cupping-score-bar  { flex: 1; height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+.cupping-score-fill { height: 100%; background: linear-gradient(90deg, #8b5cf6, #c4b5fd); border-radius: 3px; }
+.cupping-score-num  { font-size: 12px; font-weight: 800; color: #c4b5fd; width: 22px; text-align: right; }
+.cupping-votes { font-size: 11px; color: #8a7862; text-align: right; white-space: nowrap; }
+.cupping-vote-btn {
+  padding: 7px 10px; border-radius: 8px; border: 1px solid rgba(212,160,96,0.4);
+  background: transparent; color: #d4a060; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+}
+.cupping-vote-btn:hover:not(:disabled) { background: rgba(212,160,96,0.15); }
+.cupping-vote-btn.voted { background: #d4a060; color: #1a0a04; border-color: #d4a060; }
+.cupping-vote-btn:disabled:not(.voted) { opacity: 0.35; cursor: not-allowed; }
 
 /* ── PACKAGING ANATOMY ───────────────────────── */
 .anatomy-section { padding: 88px 24px; background: #1a0a04; }
