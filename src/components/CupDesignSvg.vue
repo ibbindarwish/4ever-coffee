@@ -118,17 +118,18 @@ const ssp  = computed(() => props.subSpacing   ?? 2)
 
     <!-- ── LOGO — centered on sleeve ── -->
     <template v-if="logoStyle === 'circle4'">
-      <!-- Glow halo -->
-      <circle cx="80" cy="153" r="30" :fill="logoColor" opacity="0.06"/>
-      <!-- Badge ring -->
-      <circle cx="80" cy="153" r="25" fill="rgba(0,0,0,0.22)"
-              :stroke="logoColor" stroke-width="2.4" :filter="gwFlt"/>
-      <!-- Inner double-ring -->
-      <circle cx="80" cy="153" r="21" fill="none"
-              :stroke="logoColor" stroke-width="0.75" opacity="0.38"/>
-      <!-- "4" lettermark — one continuous hand-drawn stroke -->
-      <path d="M87,138 L61,161 L100,161 M87,138 L87,171"
-            fill="none" :stroke="logoColor" stroke-width="4.2"
+      <!-- Filled badge circle -->
+      <circle cx="80" cy="153" r="25" :fill="logoColor" :filter="gwFlt"/>
+      <!-- Inner precision ring -->
+      <circle cx="80" cy="153" r="21" stroke="white" stroke-width="0.75" fill="none" opacity="0.18"/>
+      <!-- Cardinal accent dots -->
+      <circle cx="80"  cy="132" r="1" fill="white" opacity="0.25"/>
+      <circle cx="101" cy="153" r="1" fill="white" opacity="0.25"/>
+      <circle cx="80"  cy="174" r="1" fill="white" opacity="0.25"/>
+      <circle cx="59"  cy="153" r="1" fill="white" opacity="0.25"/>
+      <!-- "4" lettermark -->
+      <path d="M85,135 L63,157 L97,157 M85,135 L85,170"
+            fill="none" stroke="#fff4e0" stroke-width="4.5"
             stroke-linecap="round" stroke-linejoin="round"/>
     </template>
 

@@ -132,18 +132,18 @@ const fs = computed(() => ({
     <!-- ══════════════════════════════════════════════════════════════ -->
     <g v-if="isFront"
        :transform="`translate(130,220) scale(${fs.logoScale}) translate(-130,-220)`">
-      <!-- Outer ambient glow -->
-      <circle cx="130" cy="220" r="62" :fill="logoColor" opacity="0.04"/>
-      <!-- Badge ring -->
-      <circle cx="130" cy="220" r="52"
-              fill="rgba(0,0,0,0.22)" :stroke="logoColor" stroke-width="3"
-              :filter="`url(#${uid('glow')})`" opacity="0.9"/>
-      <!-- Inner double ring -->
-      <circle cx="130" cy="220" r="44"
-              fill="none" :stroke="logoColor" stroke-width="0.9" opacity="0.35"/>
-      <!-- "4" lettermark — one continuous hand-drawn stroke, scaled to fit r=52 badge -->
-      <path d="M142,190 L100,232 L162,232 M142,190 L142,254"
-            fill="none" :stroke="logoColor" :stroke-width="fs.logoStroke * 1.6"
+      <!-- Filled badge circle -->
+      <circle cx="130" cy="220" r="52" :fill="logoColor" :filter="`url(#${uid('glow')})`"/>
+      <!-- Inner precision ring -->
+      <circle cx="130" cy="220" r="44" stroke="white" stroke-width="0.9" fill="none" opacity="0.18"/>
+      <!-- Cardinal accent dots -->
+      <circle cx="130" cy="176" r="2.2" fill="white" opacity="0.25"/>
+      <circle cx="174" cy="220" r="2.2" fill="white" opacity="0.25"/>
+      <circle cx="130" cy="264" r="2.2" fill="white" opacity="0.25"/>
+      <circle cx="86"  cy="220" r="2.2" fill="white" opacity="0.25"/>
+      <!-- "4" lettermark -->
+      <path d="M140,182 L95,229 L165,229 M140,182 L140,256"
+            fill="none" stroke="#fff4e0" :stroke-width="fs.logoStroke * 2.2"
             stroke-linecap="round" stroke-linejoin="round"/>
     </g>
 
