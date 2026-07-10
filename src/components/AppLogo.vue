@@ -18,29 +18,22 @@ defineProps<{ size?: number; dark?: boolean }>()
   >
     <!-- ── BADGE MARK ── -->
 
-    <!-- Filled circle -->
+    <!-- Filled circle badge -->
     <circle cx="40" cy="40" r="36" :fill="dark ? '#1c1008' : '#c8813a'"/>
 
-    <!-- Inner precision ring -->
-    <circle cx="40" cy="40" r="30" stroke="white" stroke-width="0.9" fill="none" opacity="0.18"/>
-
-    <!-- Cardinal accent dots on inner ring -->
-    <circle cx="40" cy="10" r="1.5" fill="white" opacity="0.25"/>
-    <circle cx="70" cy="40" r="1.5" fill="white" opacity="0.25"/>
-    <circle cx="40" cy="70" r="1.5" fill="white" opacity="0.25"/>
-    <circle cx="10" cy="40" r="1.5" fill="white" opacity="0.25"/>
-
-    <!-- "@"-style "4": outer ring arc leaving gap on the right -->
-    <path d="M62,30 A24,24 0 1 0 62,50"
-          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5"
-          fill="none" stroke-linecap="round"/>
-    <!-- "4" arm + crossbar inside the ring -->
-    <path d="M62,30 L16,43 L62,43"
-          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5"
+    <!-- "@4" mark: outer ring opens upper-right with tail, "4" inside -->
+    <!-- Ring: CCW from upper-right (53,15) around left+bottom+right, tail at (68,40) -->
+    <path d="M53,15 A28,28 0 1 0 68,40 Q72,42 70,46"
+          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="4.5"
           fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- "4" vertical stem — fills ring gap, completing the "@" -->
-    <line x1="62" y1="30" x2="62" y2="50"
-          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5" stroke-linecap="round"/>
+    <!-- "4" arm + crossbar -->
+    <path d="M53,15 L23,44 L53,44"
+          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="4.5"
+          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- "4" vertical stem -->
+    <path d="M53,15 L53,60"
+          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="4.5"
+          fill="none" stroke-linecap="round"/>
 
     <!-- ── WORDMARK ── -->
 

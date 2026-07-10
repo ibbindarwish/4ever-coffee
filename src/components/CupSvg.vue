@@ -61,17 +61,17 @@ const uid = (n: string) => `${n}-${props.size}`
     <ellipse cx="80" cy="80" rx="58" ry="5.5" fill="#d8d4cc"/>
     <ellipse cx="80" cy="79" rx="52" ry="4"   fill="#0e0806"/>
 
-    <!-- ── LOGO — "@"-style "4" mark (dark badge + white mark) ── -->
+    <!-- ── LOGO — "@4" mark matching hand-drawn design ── -->
     <circle cx="80" cy="156" r="33" fill="#1a1a1a"/>
-    <!-- "@" outer ring: counterclockwise arc leaving gap on the right -->
-    <path d="M101,147 A22,22 0 1 0 101,165"
-          stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <!-- "4" arm + crossbar inside the ring -->
-    <path d="M101,147 L63,162 L101,162"
-          stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- "4" vertical stem — fills the ring gap, completing the "@" -->
-    <line x1="101" y1="147" x2="101" y2="165"
-          stroke="white" stroke-width="4" stroke-linecap="round"/>
+    <!-- Ring: CCW from upper-right (92,133) around left+bottom+right, tail exits right -->
+    <path d="M92,133 A26,26 0 1 0 106,156 Q110,158 108,162"
+          stroke="white" stroke-width="3.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- "4" arm + crossbar inside -->
+    <path d="M92,133 L64,160 L92,160"
+          stroke="white" stroke-width="3.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- "4" vertical stem -->
+    <path d="M92,133 L92,174"
+          stroke="white" stroke-width="3.8" fill="none" stroke-linecap="round"/>
 
   </svg>
 </template>
