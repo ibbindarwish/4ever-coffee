@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, defineAsyncComponent } from 'vue'
 import CupDesignSvg from '../../components/CupDesignSvg.vue'
+
+const Cup3DViewer = defineAsyncComponent(() => import('../../components/Cup3DViewer.vue'))
+const viewMode = ref<'2d' | '3d'>('2d')
 
 // ── Presets ──────────────────────────────────────────────────────────────────
 
@@ -387,8 +390,14 @@ const sizeLabels: Record<string, string> = { sm: 'S · 8oz', md: 'M · 12oz', lg
       <main class="preview-panel">
         <div class="preview-card">
 
+          <!-- View mode toggle -->
+          <div class="view-toggle">
+            <button class="view-toggle-btn" :class="{ active: viewMode === '2d' }" @click="viewMode = '2d'">2D</button>
+            <button class="view-toggle-btn" :class="{ active: viewMode === '3d' }" @click="viewMode = '3d'">🔄 3D</button>
+          </div>
+
           <!-- Size bar -->
-          <div class="size-bar">
+          <div class="size-bar" v-if="viewMode === '2d'">
             <span class="size-bar-label">Preview Size</span>
             <div class="size-btns">
               <button v-for="sc in [{l:'S',v:1.0},{l:'M',v:1.6},{l:'L',v:2.2},{l:'XL',v:2.8}]"
@@ -406,7 +415,7 @@ const sizeLabels: Record<string, string> = { sm: 'S · 8oz', md: 'M · 12oz', lg
           </div>
 
           <!-- Cup preview -->
-          <div class="preview-cup">
+          <div class="preview-cup" v-if="viewMode === '2d'">
             <CupDesignSvg
               :size="design.size"
               :scale="design.cupScale"
@@ -426,6 +435,30 @@ const sizeLabels: Record<string, string> = { sm: 'S · 8oz', md: 'M · 12oz', lg
               :steamColor="design.steamColor"
               :font="design.font"
             />
+          </div>
+
+          <!-- 3D preview — drag to spin, auto-rotates -->
+          <div class="preview-cup-3d" v-else>
+            <Suspense>
+              <Cup3DViewer
+                :bodyLight="design.bodyLight"
+                :bodyDark="design.bodyDark"
+                :sleeveColor="design.sleeveColor"
+                :borderColor="design.borderColor"
+                :logoColor="design.logoColor"
+                :logoStyle="design.logoStyle"
+                :mainText="design.mainText"
+                :mainFontSize="design.mainFontSize"
+                :mainSpacing="design.mainSpacing"
+                :subText="design.subText"
+                :subFontSize="design.subFontSize"
+                :subSpacing="design.subSpacing"
+                :font="design.font"
+              />
+              <template #fallback>
+                <div class="cup-3d-loading">Loading 3D viewer…</div>
+              </template>
+            </Suspense>
           </div>
 
           <!-- Meta row -->
@@ -627,6 +660,26 @@ const sizeLabels: Record<string, string> = { sm: 'S · 8oz', md: 'M · 12oz', lg
   position: relative; z-index: 1;
   filter: drop-shadow(0 28px 44px rgba(0,0,0,0.55));
 }
+.preview-cup-3d {
+  position: relative; z-index: 1; width: 100%; height: 420px;
+}
+.cup-3d-loading {
+  display: flex; align-items: center; justify-content: center; height: 100%;
+  color: rgba(212,160,96,0.6); font-size: 13px; font-weight: 600;
+}
+
+.view-toggle {
+  display: flex; gap: 6px; position: relative; z-index: 2;
+  background: rgba(212,160,96,0.08); border: 1px solid rgba(212,160,96,0.2);
+  border-radius: 12px; padding: 4px; width: fit-content;
+}
+.view-toggle-btn {
+  padding: 7px 16px; border-radius: 9px; border: none; background: transparent;
+  color: rgba(212,160,96,0.6); font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; font-family: inherit;
+}
+.view-toggle-btn.active { background: rgba(212,160,96,0.18); color: #d4a060; }
+.view-toggle-btn:hover:not(.active) { color: rgba(212,160,96,0.85); }
 .preview-meta {
   display: flex; align-items: center; gap: 10px; position: relative; z-index: 1;
 }
