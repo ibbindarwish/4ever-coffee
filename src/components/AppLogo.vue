@@ -30,13 +30,17 @@ defineProps<{ size?: number; dark?: boolean }>()
     <circle cx="40" cy="70" r="1.5" fill="white" opacity="0.25"/>
     <circle cx="10" cy="40" r="1.5" fill="white" opacity="0.25"/>
 
-    <!-- "4" lettermark: "@"-style — diagonal arm + crossbar, then stem curls around -->
-    <path d="M47,14 L16,46 L64,46"
-          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5"
-          stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <path d="M47,14 L47,62 Q47,73 37,73 Q23,73 23,60 Q23,47 36,47"
-          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5"
-          stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- "@"-style "4": outer ring arc leaving gap on the right -->
+    <path d="M62,30 A24,24 0 1 0 62,50"
+          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5"
+          fill="none" stroke-linecap="round"/>
+    <!-- "4" arm + crossbar inside the ring -->
+    <path d="M62,30 L16,43 L62,43"
+          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5"
+          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- "4" vertical stem — fills ring gap, completing the "@" -->
+    <line x1="62" y1="30" x2="62" y2="50"
+          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5" stroke-linecap="round"/>
 
     <!-- ── WORDMARK ── -->
 
