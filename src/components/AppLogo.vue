@@ -18,22 +18,22 @@ defineProps<{ size?: number; dark?: boolean }>()
   >
     <!-- ── BADGE MARK ── -->
 
-    <!-- Filled circle badge -->
+    <!-- Filled circle -->
     <circle cx="40" cy="40" r="36" :fill="dark ? '#1c1008' : '#c8813a'"/>
 
-    <!-- "@4" mark: outer ring opens upper-right with tail, "4" inside -->
-    <!-- Ring: CCW from upper-right (53,15) around left+bottom+right, tail at (68,40) -->
-    <path d="M53,15 A28,28 0 1 0 68,40 Q72,42 70,46"
-          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="4.5"
-          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- "4" arm + crossbar -->
-    <path d="M53,15 L23,44 L53,44"
-          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="4.5"
-          fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- "4" vertical stem -->
-    <path d="M53,15 L53,60"
-          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="4.5"
-          fill="none" stroke-linecap="round"/>
+    <!-- Inner precision ring -->
+    <circle cx="40" cy="40" r="30" stroke="white" stroke-width="0.9" fill="none" opacity="0.18"/>
+
+    <!-- Cardinal accent dots -->
+    <circle cx="40" cy="10" r="1.5" fill="white" opacity="0.25"/>
+    <circle cx="70" cy="40" r="1.5" fill="white" opacity="0.25"/>
+    <circle cx="40" cy="70" r="1.5" fill="white" opacity="0.25"/>
+    <circle cx="10" cy="40" r="1.5" fill="white" opacity="0.25"/>
+
+    <!-- "4" lettermark -->
+    <line x1="47" y1="14" x2="16" y2="46" :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="16" y1="46" x2="64" y2="46" :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5" stroke-linecap="round"/>
+    <line x1="47" y1="14" x2="47" y2="65" :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5" stroke-linecap="round"/>
 
     <!-- ── WORDMARK ── -->
 

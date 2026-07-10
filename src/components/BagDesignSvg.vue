@@ -134,19 +134,17 @@ const fs = computed(() => ({
        :transform="`translate(130,220) scale(${fs.logoScale}) translate(-130,-220)`">
       <!-- Filled badge circle -->
       <circle cx="130" cy="220" r="52" :fill="logoColor" :filter="`url(#${uid('glow')})`"/>
-      <!-- "@4" mark: ring CCW from upper-right, tail exits right, "4" inside -->
-      <!-- Ring -->
-      <path d="M149,184 A41,41 0 1 0 171,220 Q177,222 175,228"
+      <!-- Inner precision ring -->
+      <circle cx="130" cy="220" r="44" stroke="white" stroke-width="0.9" fill="none" opacity="0.18"/>
+      <!-- Cardinal accent dots -->
+      <circle cx="130" cy="176" r="2.2" fill="white" opacity="0.25"/>
+      <circle cx="174" cy="220" r="2.2" fill="white" opacity="0.25"/>
+      <circle cx="130" cy="264" r="2.2" fill="white" opacity="0.25"/>
+      <circle cx="86"  cy="220" r="2.2" fill="white" opacity="0.25"/>
+      <!-- "4" lettermark -->
+      <path d="M140,182 L95,229 L165,229 M140,182 L140,256"
             fill="none" stroke="#fff4e0" :stroke-width="fs.logoStroke * 2.2"
             stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- "4" arm + crossbar -->
-      <path d="M149,184 L105,226 L149,226"
-            fill="none" stroke="#fff4e0" :stroke-width="fs.logoStroke * 2.2"
-            stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- "4" vertical stem -->
-      <path d="M149,184 L149,248"
-            fill="none" stroke="#fff4e0" :stroke-width="fs.logoStroke * 2.2"
-            stroke-linecap="round"/>
     </g>
 
     <!-- ══════════════════════════════════════════════════════════════ -->

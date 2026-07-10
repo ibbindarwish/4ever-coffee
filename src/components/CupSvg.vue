@@ -14,25 +14,35 @@ const uid = (n: string) => `${n}-${props.size}`
     class="cup-svg"
   >
     <defs>
-      <!-- Clean white cup body -->
       <linearGradient :id="uid('bg')" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%"   stop-color="#dedad4"/>
-        <stop offset="15%"  stop-color="#f5f3f0"/>
-        <stop offset="50%"  stop-color="#ffffff"/>
-        <stop offset="85%"  stop-color="#f5f3f0"/>
-        <stop offset="100%" stop-color="#dedad4"/>
+        <stop offset="0%"   stop-color="#cec8ba"/>
+        <stop offset="18%"  stop-color="#ede8de"/>
+        <stop offset="50%"  stop-color="#faf8f4"/>
+        <stop offset="82%"  stop-color="#ede8de"/>
+        <stop offset="100%" stop-color="#cec8ba"/>
       </linearGradient>
 
-      <!-- Bottom base -->
+      <linearGradient :id="uid('sl')" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stop-color="#1a0c06"/>
+        <stop offset="12%"  stop-color="#200e06"/>
+        <stop offset="50%"  stop-color="#261208"/>
+        <stop offset="88%"  stop-color="#200e06"/>
+        <stop offset="100%" stop-color="#1a0c06"/>
+      </linearGradient>
+
       <radialGradient :id="uid('btm')" cx="50%" cy="30%" r="60%">
-        <stop offset="0%"   stop-color="#e8e4dc"/>
-        <stop offset="100%" stop-color="#c8c4bc"/>
+        <stop offset="0%"   stop-color="#d4b478"/>
+        <stop offset="100%" stop-color="#8a6030"/>
       </radialGradient>
 
-      <!-- Soft drop shadow -->
       <filter :id="uid('sh')" x="-30%" y="-5%" width="160%" height="175%">
         <feDropShadow dx="0" dy="60" stdDeviation="14"
-                      flood-color="#1a1a1a" flood-opacity="0.12"/>
+                      flood-color="#2a1806" flood-opacity="0.18"/>
+      </filter>
+
+      <filter :id="uid('gld')" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2.5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
 
@@ -57,21 +67,31 @@ const uid = (n: string) => `${n}-${props.size}`
     <!-- Bottom oval -->
     <ellipse cx="80" cy="249" rx="44" ry="7" :fill="`url(#${uid('btm')})`"/>
 
-    <!-- ── CUP OPENING — thin rim only ── -->
-    <ellipse cx="80" cy="80" rx="58" ry="5.5" fill="#d8d4cc"/>
+    <!-- ── CUP OPENING ── -->
+    <ellipse cx="80" cy="80" rx="58" ry="5.5" fill="#d0c8b4"/>
     <ellipse cx="80" cy="79" rx="52" ry="4"   fill="#0e0806"/>
 
-    <!-- ── LOGO — "@4" mark matching hand-drawn design ── -->
-    <circle cx="80" cy="156" r="33" fill="#1a1a1a"/>
-    <!-- Ring: CCW from upper-right (92,133) around left+bottom+right, tail exits right -->
-    <path d="M92,133 A26,26 0 1 0 106,156 Q110,158 108,162"
-          stroke="white" stroke-width="3.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- "4" arm + crossbar inside -->
-    <path d="M92,133 L64,160 L92,160"
-          stroke="white" stroke-width="3.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- "4" vertical stem -->
-    <path d="M92,133 L92,174"
-          stroke="white" stroke-width="3.8" fill="none" stroke-linecap="round"/>
+    <!-- ── SLEEVE ── -->
+    <path
+      d="M26,118 L22,194 Q80,202 138,194 L134,118 Q80,122 26,118 Z"
+      :fill="`url(#${uid('sl')})`"
+    />
+    <path d="M26,118 Q80,122 134,118"
+          fill="none" stroke="#d4a060" stroke-width="2" stroke-linecap="round"/>
+    <path d="M22,194 Q80,202 138,194"
+          fill="none" stroke="#d4a060" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- ── LOGO ── -->
+    <circle cx="80" cy="156" r="36" fill="rgba(212,160,96,0.06)"/>
+    <circle cx="80" cy="156" r="30"
+            fill="rgba(0,0,0,0.22)"
+            stroke="#d4a060" stroke-width="2.6"
+            :filter="`url(#${uid('gld')})`"/>
+    <circle cx="80" cy="156" r="25"
+            fill="none" stroke="#d4a060" stroke-width="0.8" opacity="0.4"/>
+    <line x1="88" y1="138" x2="60"  y2="163" stroke="#d4a060" stroke-width="4.2" stroke-linecap="round"/>
+    <line x1="59" y1="163" x2="103" y2="163" stroke="#d4a060" stroke-width="4.2" stroke-linecap="round"/>
+    <line x1="88" y1="138" x2="88"  y2="177" stroke="#d4a060" stroke-width="4.2" stroke-linecap="round"/>
 
   </svg>
 </template>
