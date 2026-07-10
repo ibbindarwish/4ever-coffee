@@ -141,8 +141,11 @@ const fs = computed(() => ({
       <circle cx="174" cy="220" r="2.2" fill="white" opacity="0.25"/>
       <circle cx="130" cy="264" r="2.2" fill="white" opacity="0.25"/>
       <circle cx="86"  cy="220" r="2.2" fill="white" opacity="0.25"/>
-      <!-- "4" lettermark -->
-      <path d="M140,182 L95,229 L165,229 M140,182 L140,256"
+      <!-- "4" in "@" style: diagonal arm + crossbar, stem curls around -->
+      <path d="M140,182 L95,229 L170,229"
+            fill="none" stroke="#fff4e0" :stroke-width="fs.logoStroke * 2.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M140,182 L140,262 Q140,276 127,276 Q108,276 108,259 Q108,242 124,242"
             fill="none" stroke="#fff4e0" :stroke-width="fs.logoStroke * 2.2"
             stroke-linecap="round" stroke-linejoin="round"/>
     </g>

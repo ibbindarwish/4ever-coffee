@@ -30,10 +30,13 @@ defineProps<{ size?: number; dark?: boolean }>()
     <circle cx="40" cy="70" r="1.5" fill="white" opacity="0.25"/>
     <circle cx="10" cy="40" r="1.5" fill="white" opacity="0.25"/>
 
-    <!-- "4" lettermark: diagonal arm, crossbar, vertical stem -->
-    <line x1="47" y1="14" x2="16" y2="46" :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5" stroke-linecap="round"/>
-    <line x1="16" y1="46" x2="64" y2="46" :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5" stroke-linecap="round"/>
-    <line x1="47" y1="14" x2="47" y2="65" :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5" stroke-linecap="round"/>
+    <!-- "4" lettermark: "@"-style — diagonal arm + crossbar, then stem curls around -->
+    <path d="M47,14 L16,46 L64,46"
+          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5"
+          stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M47,14 L47,62 Q47,73 37,73 Q23,73 23,60 Q23,47 36,47"
+          :stroke="dark ? '#d4a060' : '#fff4e0'" stroke-width="5.5"
+          stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 
     <!-- ── WORDMARK ── -->
 

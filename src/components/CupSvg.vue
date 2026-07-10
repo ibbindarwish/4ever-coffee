@@ -64,10 +64,11 @@ const uid = (n: string) => `${n}-${props.size}`
     <!-- ── LOGO — black circle with white "4" ── -->
     <circle cx="80" cy="156" r="32" fill="#1a1a1a"/>
     <circle cx="80" cy="156" r="26" fill="none" stroke="white" stroke-width="0.8" opacity="0.25"/>
-    <!-- "4" in white -->
-    <line x1="88" y1="138" x2="60"  y2="163" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
-    <line x1="59" y1="163" x2="103" y2="163" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
-    <line x1="88" y1="138" x2="88"  y2="177" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+    <!-- "4" in "@" style: diagonal arm + crossbar, stem curls around -->
+    <path d="M88,132 L60,162 L108,162"
+          stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M88,132 L88,173 Q88,186 78,186 Q62,186 62,172 Q62,158 76,158"
+          stroke="white" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 
   </svg>
 </template>
