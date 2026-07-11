@@ -31,6 +31,7 @@ const router = createRouter({
         { path: 'promo-codes', name: 'promo-codes', component: () => import('../pages/admin/PromoCodesPage.vue'), meta: { adminOnly: true } },
         { path: 'packaging-designer', name: 'packaging-designer', component: () => import('../pages/admin/PackagingDesignerPage.vue') },
         { path: 'cup-designer', name: 'cup-designer', component: () => import('../pages/admin/CupDesignerPage.vue') },
+        { path: 'crm', name: 'crm', component: () => import('../pages/admin/CrmPage.vue') },
       ],
     },
     {

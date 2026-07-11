@@ -170,8 +170,39 @@ onMounted(() => {
 
 import { onUnmounted } from 'vue'
 import { useRoasteryStore } from '../../stores/roastery'
+import { useCrmStore, type EmailTag } from '../../stores/crm'
 
 const roasteryStore = useRoasteryStore()
+const crmStore = useCrmStore()
+
+// ── NEWSLETTER SIGNUP ─────────────────────────────────────────────────────────
+const nlName   = ref('')
+const nlEmail  = ref('')
+const nlTags   = ref<EmailTag[]>(['deals', 'discounts'])
+const nlSent   = ref(false)
+const nlError  = ref('')
+
+const NL_TAGS: { key: EmailTag; label: string; icon: string }[] = [
+  { key: 'deals',     label: 'New Deals',     icon: '🆕' },
+  { key: 'roastery',  label: 'Roastery',       icon: '🌍' },
+  { key: 'reviews',   label: 'Reviews',        icon: '⭐' },
+  { key: 'discounts', label: 'Discounts',      icon: '🏷' },
+]
+
+function toggleNlTag(t: EmailTag) {
+  const i = nlTags.value.indexOf(t)
+  if (i === -1) nlTags.value.push(t)
+  else nlTags.value.splice(i, 1)
+}
+
+function submitNewsletter() {
+  nlError.value = ''
+  if (!nlEmail.value.trim()) { nlError.value = 'Please enter your email address.'; return }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nlEmail.value)) { nlError.value = 'Please enter a valid email address.'; return }
+  const tags = nlTags.value.length ? [...nlTags.value] : ['deals' as EmailTag]
+  crmStore.addSubscriber(nlName.value.trim() || 'Coffee Lover', nlEmail.value.trim(), tags)
+  nlSent.value = true
+}
 
 // ── COFFEE CLOCK ─────────────────────────────────────────────────────────────
 const now = ref(new Date())
@@ -1157,6 +1188,62 @@ const weatherRec = computed(() => {
         </div>
       </div>
 
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- NEWSLETTER SIGNUP                                                     -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <section class="nl-section reveal">
+      <div class="nl-bg-orb nl-orb-1"></div>
+      <div class="nl-bg-orb nl-orb-2"></div>
+      <div class="nl-inner">
+        <div class="nl-left">
+          <div class="nl-eyebrow">Stay in the Loop</div>
+          <h2 class="nl-headline">Get the best of 4ever<br><em>delivered to your inbox</em></h2>
+          <p class="nl-tagline">Exclusive deals, roastery updates, new arrivals, and discount codes — curated for real coffee lovers. Join 2,400+ subscribers.</p>
+          <div class="nl-perks">
+            <div v-for="p in NL_TAGS" :key="p.key" class="nl-perk">
+              <span class="nl-perk-icon">{{ p.icon }}</span>
+              <span>{{ p.label }} emails</span>
+            </div>
+          </div>
+        </div>
+        <div class="nl-right">
+          <Transition name="fade" mode="out-in">
+            <div v-if="nlSent" class="nl-success">
+              <div class="nl-success-icon">✓</div>
+              <div class="nl-success-title">You're subscribed!</div>
+              <p class="nl-success-body">Welcome to the 4ever Coffee community. Check your inbox for a confirmation and your first exclusive deal.</p>
+            </div>
+            <div v-else class="nl-form-card">
+              <div class="nl-form-title">Subscribe — It's Free</div>
+              <div class="nl-field">
+                <label class="nl-field-label">First Name <span class="nl-opt">(optional)</span></label>
+                <input v-model="nlName" class="nl-input" placeholder="e.g. Emma" />
+              </div>
+              <div class="nl-field">
+                <label class="nl-field-label">Email Address <span class="nl-req">*</span></label>
+                <input v-model="nlEmail" class="nl-input" placeholder="you@example.com" type="email" />
+              </div>
+              <div class="nl-tags-section">
+                <label class="nl-field-label">I want to receive</label>
+                <div class="nl-tag-row">
+                  <button v-for="t in NL_TAGS" :key="t.key"
+                    class="nl-tag-btn" :class="{ selected: nlTags.includes(t.key) }"
+                    @click="toggleNlTag(t.key)">
+                    {{ t.icon }} {{ t.label }}
+                  </button>
+                </div>
+              </div>
+              <div v-if="nlError" class="nl-err">{{ nlError }}</div>
+              <button class="nl-submit-btn" @click="submitNewsletter">
+                Subscribe Now →
+              </button>
+              <p class="nl-privacy">No spam, ever. Unsubscribe in one click at any time.</p>
+            </div>
+          </Transition>
+        </div>
+      </div>
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════════════ -->
@@ -2202,6 +2289,50 @@ const weatherRec = computed(() => {
 }
 .dperk { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #78716c; }
 .dperk-icon { font-size: 18px; }
+
+/* ── NEWSLETTER ─────────────────────────────────── */
+.nl-section {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #1a0804 0%, #2c1008 50%, #1a0804 100%);
+  padding: 88px 24px;
+}
+.nl-bg-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; pointer-events: none; }
+.nl-orb-1 { width: 400px; height: 400px; background: #c8813a; top: -120px; left: -80px; }
+.nl-orb-2 { width: 300px; height: 300px; background: #d4a060; bottom: -80px; right: -60px; }
+.nl-inner { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; display: flex; gap: 64px; align-items: center; flex-wrap: wrap; }
+.nl-left { flex: 1; min-width: 280px; }
+.nl-right { flex: 1; min-width: 300px; max-width: 480px; }
+.nl-eyebrow { font-size: 11px; font-weight: 700; color: #d4a060; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 14px; }
+.nl-headline { font-family: 'Playfair Display', serif; font-size: clamp(30px, 4vw, 48px); font-weight: 900; color: #fdf6ec; line-height: 1.15; margin: 0 0 18px; letter-spacing: -1px; }
+.nl-headline em { font-style: normal; color: #d4a060; }
+.nl-tagline { font-size: 15px; color: #a8a29e; line-height: 1.75; margin: 0 0 28px; max-width: 420px; }
+.nl-perks { display: flex; flex-direction: column; gap: 10px; }
+.nl-perk { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #78716c; }
+.nl-perk-icon { font-size: 16px; width: 28px; }
+
+.nl-form-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(212,160,96,0.2); border-radius: 20px; padding: 32px; backdrop-filter: blur(8px); }
+.nl-form-title { font-size: 18px; font-weight: 800; color: #fdf6ec; margin-bottom: 20px; letter-spacing: -0.3px; }
+.nl-field { margin-bottom: 14px; }
+.nl-field-label { display: block; font-size: 11px; font-weight: 700; color: #78716c; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.nl-opt { color: #57534e; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.nl-req { color: #d4a060; }
+.nl-input { width: 100%; padding: 11px 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; background: rgba(255,255,255,0.06); color: #fdf6ec; font-size: 14px; font-family: inherit; box-sizing: border-box; transition: border-color 0.2s; }
+.nl-input:focus { outline: none; border-color: #d4a060; }
+.nl-input::placeholder { color: #57534e; }
+.nl-tags-section { margin-bottom: 18px; }
+.nl-tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.nl-tag-btn { padding: 7px 14px; border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; background: rgba(255,255,255,0.04); color: #a8a29e; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.18s; }
+.nl-tag-btn:hover { border-color: rgba(212,160,96,0.4); color: #d4a060; }
+.nl-tag-btn.selected { border-color: #d4a060; background: rgba(212,160,96,0.12); color: #d4a060; }
+.nl-err { font-size: 12px; color: #fca5a5; margin-bottom: 12px; }
+.nl-submit-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #c8813a, #d4a060); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; box-shadow: 0 6px 24px rgba(200,129,58,0.4); transition: all 0.2s; }
+.nl-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(200,129,58,0.55); }
+.nl-privacy { font-size: 11px; color: #57534e; text-align: center; margin: 12px 0 0; }
+
+.nl-success { text-align: center; padding: 48px 24px; }
+.nl-success-icon { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #c8813a, #d4a060); color: #fff; font-size: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+.nl-success-title { font-size: 22px; font-weight: 800; color: #fdf6ec; margin-bottom: 10px; }
+.nl-success-body { font-size: 14px; color: #a8a29e; line-height: 1.7; }
 
 /* ── TESTIMONIALS ───────────────────────────────── */
 .testimonials-section { padding: 88px 0; background: #faf7f2; }

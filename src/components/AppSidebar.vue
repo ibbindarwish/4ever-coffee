@@ -82,6 +82,9 @@ function isActive(path: string) {
         <span class="nav-icon">🏷</span> Promo Codes
         <span class="nav-badge admin-only">Admin</span>
       </RouterLink>
+      <RouterLink to="/crm" class="nav-link" :class="{ active: isActive('/crm') }">
+        <span class="nav-icon">✉️</span> CRM &amp; Email
+      </RouterLink>
       <RouterLink to="/settings" class="nav-link" :class="{ active: isActive('/settings') }">
         <span class="nav-icon">⚙</span> Settings
       </RouterLink>
