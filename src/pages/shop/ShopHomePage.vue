@@ -162,6 +162,51 @@ onMounted(() => {
     entries.forEach(e => { if (e.isIntersecting) { (e.target as HTMLElement).classList.add('visible'); obs.unobserve(e.target) } })
   }, { threshold: 0.12 })
   els.forEach(el => obs.observe(el))
+  // Clock
+  clockInterval = setInterval(updateClock, 1000)
+})
+
+import { onUnmounted } from 'vue'
+import { useRoasteryStore } from '../../stores/roastery'
+
+const roasteryStore = useRoasteryStore()
+
+// ── COFFEE CLOCK ─────────────────────────────────────────────────────────────
+const now = ref(new Date())
+let clockInterval: ReturnType<typeof setInterval>
+onUnmounted(() => clearInterval(clockInterval))
+function updateClock() { now.value = new Date() }
+
+const clockRec = computed(() => {
+  const h = now.value.getHours()
+  if (h >= 5  && h < 9)  return { label: 'Morning Ritual',    bean: 'Ethiopian Yirgacheffe', brew: 'Pour Over',    why: 'Light, floral, and bright — the perfect morning awakening.' }
+  if (h >= 9  && h < 12) return { label: 'Peak Focus',        bean: 'Kenya AA',              brew: 'Aeropress',    why: 'Sharp, juicy, and complex — built for deep work.' }
+  if (h >= 12 && h < 15) return { label: 'Afternoon Lift',    bean: 'Colombian Supremo',     brew: 'Espresso',     why: 'Smooth caramel energy to carry you past noon.' }
+  if (h >= 15 && h < 18) return { label: 'Golden Hour',       bean: 'Panama Geisha',         brew: 'Pour Over',    why: 'The world\'s finest cup deserves the golden hour.' }
+  if (h >= 18 && h < 21) return { label: 'Evening Wind-Down', bean: 'Rwanda Bourbon',        brew: 'Cold Brew',    why: 'Silky and berry-bright — savour the end of your day.' }
+  return                         { label: 'Night Cap',         bean: 'Peru Organic (Decaf)',  brew: 'French Press', why: 'All the ritual, none of the 3am stare.' }
+})
+
+const clockTime = computed(() => now.value.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))
+
+// ── MORNING MOOD SELECTOR ────────────────────────────────────────────────────
+const selectedMood = ref<string | null>(null)
+const moods = [
+  { key: 'tired',    emoji: '😴', label: 'Tired',    rec: 'Vietnam Robusta',        brew: 'Iced Black',  why: 'Double the caffeine of Arabica. You need this.' },
+  { key: 'focused',  emoji: '🧠', label: 'Focused',  rec: 'Kenya AA',               brew: 'Aeropress',   why: 'Bright and sharp — precision coffee for precision thinking.' },
+  { key: 'social',   emoji: '💬', label: 'Social',   rec: 'Colombian Supremo',      brew: 'Flat White',  why: 'Smooth, crowd-pleasing, and impossible to argue with.' },
+  { key: 'creative', emoji: '✨', label: 'Creative',  rec: 'Panama Geisha',          brew: 'Pour Over',   why: 'The most complex cup in the world. Let it inspire you.' },
+]
+const moodRec = computed(() => moods.find(m => m.key === selectedMood.value) ?? null)
+
+// ── WEATHER REPORT (mock — replace with real API) ────────────────────────────
+const weather = ref({ temp: 41, condition: 'Sunny', icon: '☀️', city: 'Dubai' })
+const weatherRec = computed(() => {
+  const t = weather.value.temp
+  if (t >= 38) return { rec: 'Cold Brew',          bean: 'Rwanda Bourbon',    why: `${t}°C outside. The only acceptable answer is cold brew.` }
+  if (t >= 28) return { rec: 'Iced Latte',          bean: 'Colombian Supremo', why: `${t}°C and climbing. Make it cold.` }
+  if (t >= 18) return { rec: 'Pour Over',           bean: 'Ethiopian Yirgacheffe', why: `${t}°C — pleasant enough for a slow, careful pour.` }
+  return              { rec: 'Dark Roast Espresso', bean: 'Sumatra Mandheling', why: `${t}°C and cold. You need something bold and warming.` }
 })
 </script>
 
@@ -969,6 +1014,90 @@ onMounted(() => {
         </div>
       </div>
     </section>
+
+    <!-- ── COFFEE CLOCK ─────────────────────────────────────────────── -->
+    <section class="clock-section reveal">
+      <div class="section-inner">
+        <div class="clock-header">
+          <div>
+            <p class="section-eyebrow">Right Now</p>
+            <h2 class="section-title" style="color:#fdf6ec">Coffee Clock</h2>
+          </div>
+          <div class="clock-time">{{ clockTime }}</div>
+        </div>
+        <div class="clock-card">
+          <div class="clock-label">{{ clockRec.label }}</div>
+          <div class="clock-bean">{{ clockRec.bean }}</div>
+          <div class="clock-brew">Best brewed as: <strong>{{ clockRec.brew }}</strong></div>
+          <p class="clock-why">{{ clockRec.why }}</p>
+          <RouterLink to="/shop/menu" class="clock-cta">Order Now →</RouterLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── WEATHER REPORT ───────────────────────────────────────────── -->
+    <section class="weather-section reveal">
+      <div class="section-inner">
+        <div class="weather-card">
+          <div class="weather-left">
+            <div class="weather-icon">{{ weather.icon }}</div>
+            <div>
+              <div class="weather-city">{{ weather.city }}</div>
+              <div class="weather-temp">{{ weather.temp }}°C · {{ weather.condition }}</div>
+            </div>
+          </div>
+          <div class="weather-divider"></div>
+          <div class="weather-right">
+            <div class="weather-rec-label">Today's Coffee Forecast</div>
+            <div class="weather-rec">{{ weatherRec.rec }}</div>
+            <div class="weather-bean">{{ weatherRec.bean }}</div>
+            <p class="weather-why">{{ weatherRec.why }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MORNING MOOD SELECTOR ────────────────────────────────────── -->
+    <section class="mood-section reveal">
+      <div class="section-inner">
+        <p class="section-eyebrow" style="text-align:center">Personalised Pick</p>
+        <h2 class="section-title" style="text-align:center">How are you feeling today?</h2>
+        <div class="mood-grid">
+          <button
+            v-for="m in moods" :key="m.key"
+            class="mood-btn" :class="{ active: selectedMood === m.key }"
+            @click="selectedMood = selectedMood === m.key ? null : m.key"
+          >
+            <span class="mood-emoji">{{ m.emoji }}</span>
+            <span class="mood-label">{{ m.label }}</span>
+          </button>
+        </div>
+        <Transition name="fade">
+          <div v-if="moodRec" class="mood-result">
+            <div class="mood-rec-bean">{{ moodRec.rec }}</div>
+            <div class="mood-rec-brew">Brew method: <strong>{{ moodRec.brew }}</strong></div>
+            <p class="mood-rec-why">{{ moodRec.why }}</p>
+            <RouterLink to="/shop/menu" class="mood-cta">Shop This →</RouterLink>
+          </div>
+        </Transition>
+      </div>
+    </section>
+
+    <!-- ── ROASTER'S DIARY ───────────────────────────────────────────── -->
+    <section class="diary-section reveal">
+      <div class="section-inner">
+        <p class="section-eyebrow">From the Roastery Floor</p>
+        <h2 class="section-title">The Roaster's Diary</h2>
+        <div class="diary-grid">
+          <div v-for="e in roasteryStore.diaryEntries" :key="e.date" class="diary-card">
+            <div class="diary-meta">{{ e.date }} · {{ e.author }}</div>
+            <div class="diary-title">{{ e.title }}</div>
+            <p class="diary-body">{{ e.body }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 </template>
 
@@ -1637,4 +1766,56 @@ onMounted(() => {
 }
 .toast-enter-active, .toast-leave-active { transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.9); }
+
+/* ── COFFEE CLOCK ── */
+.clock-section { background: #0d0603; padding: 72px 24px; }
+.clock-header  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.clock-time    { font-size: 48px; font-weight: 900; color: #d4a060; letter-spacing: -2px; font-family: 'Playfair Display', serif; }
+.clock-card    { background: rgba(255,255,255,0.04); border: 1px solid rgba(212,160,96,0.2); border-radius: 20px; padding: 32px 36px; }
+.clock-label   { font-size: 11px; font-weight: 700; color: #d4a060; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; }
+.clock-bean    { font-size: 28px; font-weight: 900; color: #fdf6ec; font-family: 'Playfair Display', serif; margin-bottom: 8px; letter-spacing: -0.5px; }
+.clock-brew    { font-size: 14px; color: #a8a29e; margin-bottom: 12px; }
+.clock-brew strong { color: #d4a060; }
+.clock-why     { font-size: 15px; color: #78716c; line-height: 1.7; margin: 0 0 24px; }
+.clock-cta     { display: inline-block; background: linear-gradient(135deg,#c8813a,#d4a060); color: #fff; border-radius: 12px; padding: 12px 28px; font-weight: 700; text-decoration: none; }
+
+/* ── WEATHER ── */
+.weather-section { background: #faf7f2; padding: 0 24px 0; }
+.weather-card  { max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 32px; background: #fff; border: 1px solid #f0ebe4; border-radius: 20px; padding: 28px 36px; box-shadow: 0 4px 20px rgba(44,16,8,0.06); }
+@media(max-width:640px) { .weather-card { flex-direction: column; gap: 16px; } }
+.weather-left  { display: flex; align-items: center; gap: 16px; }
+.weather-icon  { font-size: 48px; }
+.weather-city  { font-size: 18px; font-weight: 800; color: #1c1917; }
+.weather-temp  { font-size: 13px; color: #78716c; }
+.weather-divider { width: 1px; height: 64px; background: #f0ebe4; flex-shrink: 0; }
+.weather-right { flex: 1; }
+.weather-rec-label { font-size: 10px; font-weight: 700; color: #d4a060; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 4px; }
+.weather-rec   { font-size: 22px; font-weight: 900; color: #1c1917; font-family: 'Playfair Display', serif; }
+.weather-bean  { font-size: 13px; color: #c8813a; font-weight: 600; margin-bottom: 6px; }
+.weather-why   { font-size: 13px; color: #78716c; margin: 0; }
+
+/* ── MOOD SELECTOR ── */
+.mood-section  { background: #faf7f2; padding: 72px 24px; }
+.mood-grid     { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin: 32px 0; }
+.mood-btn      { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 130px; padding: 20px 16px; background: #fff; border: 2px solid #f0ebe4; border-radius: 18px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.mood-btn:hover, .mood-btn.active { border-color: #d4a060; background: #fdf3e7; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(200,129,58,0.15); }
+.mood-emoji    { font-size: 32px; }
+.mood-label    { font-size: 14px; font-weight: 700; color: #1c1917; }
+.mood-result   { max-width: 560px; margin: 0 auto; text-align: center; background: #1c1917; border-radius: 20px; padding: 32px 36px; }
+.mood-rec-bean { font-size: 24px; font-weight: 900; color: #fdf6ec; font-family: 'Playfair Display', serif; margin-bottom: 6px; }
+.mood-rec-brew { font-size: 13px; color: #78716c; margin-bottom: 10px; }
+.mood-rec-brew strong { color: #d4a060; }
+.mood-rec-why  { font-size: 14px; color: #a8a29e; line-height: 1.7; margin: 0 0 20px; }
+.mood-cta      { display: inline-block; background: linear-gradient(135deg,#c8813a,#d4a060); color: #fff; border-radius: 10px; padding: 12px 28px; font-weight: 700; text-decoration: none; }
+.fade-enter-active, .fade-leave-active { transition: all 0.35s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(12px); }
+
+/* ── ROASTER'S DIARY ── */
+.diary-section { background: #fff; padding: 72px 24px; }
+.diary-grid    { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 20px; margin-top: 36px; }
+.diary-card    { border: 1px solid #f0ebe4; border-radius: 16px; padding: 24px 26px; background: #faf7f2; transition: box-shadow 0.2s; }
+.diary-card:hover { box-shadow: 0 6px 24px rgba(44,16,8,0.08); }
+.diary-meta    { font-size: 11px; font-weight: 700; color: #c8813a; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+.diary-title   { font-size: 17px; font-weight: 800; color: #1c1917; margin-bottom: 12px; font-family: 'Playfair Display', serif; line-height: 1.4; }
+.diary-body    { font-size: 14px; color: #57534e; line-height: 1.75; margin: 0; }
 </style>

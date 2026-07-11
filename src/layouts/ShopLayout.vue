@@ -47,6 +47,19 @@ function logout() { customerAuth.logout(); closeMenu() }
             ⭐ Rewards
             <span v-if="loyalty.balance > 0" class="loyalty-pts">{{ loyalty.balance.toLocaleString() }}</span>
           </RouterLink>
+          <div class="exp-menu-wrap">
+            <button class="nav-link exp-trigger">Experiences ▾</button>
+            <div class="exp-dropdown">
+              <RouterLink to="/shop/flavor-compass"    class="exp-item">🧭 Flavor Compass</RouterLink>
+              <RouterLink to="/shop/horoscope"         class="exp-item">♈ Coffee Horoscope</RouterLink>
+              <RouterLink to="/shop/blend-builder"     class="exp-item">⚗️ Blend Builder</RouterLink>
+              <RouterLink to="/shop/tasting-challenge" class="exp-item">🎭 Tasting Challenge</RouterLink>
+              <RouterLink to="/shop/passport"          class="exp-item">🗺️ Coffee Passport</RouterLink>
+              <RouterLink to="/shop/waiting-room"      class="exp-item">⏳ Waiting Room</RouterLink>
+              <RouterLink to="/shop/gift"              class="exp-item">🎁 Gift Experience</RouterLink>
+              <RouterLink to="/shop/decaf-confessions" class="exp-item">🤫 Decaf Confessions</RouterLink>
+            </div>
+          </div>
           <a href="#about"   class="nav-link">About</a>
           <a href="#contact" class="nav-link">Contact</a>
         </nav>
@@ -96,6 +109,17 @@ function logout() { customerAuth.logout(); closeMenu() }
             ⭐ Rewards
             <span v-if="loyalty.balance > 0" class="loyalty-pts">{{ loyalty.balance.toLocaleString() }}</span>
           </RouterLink>
+          <div class="m-divider"></div>
+          <p class="m-section-label">Experiences</p>
+          <RouterLink to="/shop/flavor-compass"    class="m-link" @click="closeMenu">🧭 Flavor Compass</RouterLink>
+          <RouterLink to="/shop/horoscope"         class="m-link" @click="closeMenu">♈ Coffee Horoscope</RouterLink>
+          <RouterLink to="/shop/blend-builder"     class="m-link" @click="closeMenu">⚗️ Blend Builder</RouterLink>
+          <RouterLink to="/shop/tasting-challenge" class="m-link" @click="closeMenu">🎭 Tasting Challenge</RouterLink>
+          <RouterLink to="/shop/passport"          class="m-link" @click="closeMenu">🗺️ Coffee Passport</RouterLink>
+          <RouterLink to="/shop/waiting-room"      class="m-link" @click="closeMenu">⏳ Waiting Room</RouterLink>
+          <RouterLink to="/shop/gift"              class="m-link" @click="closeMenu">🎁 Gift Experience</RouterLink>
+          <RouterLink to="/shop/decaf-confessions" class="m-link" @click="closeMenu">🤫 Decaf Confessions</RouterLink>
+          <div class="m-divider"></div>
           <a href="#about"   class="m-link" @click="closeMenu">About</a>
           <a href="#contact" class="m-link" @click="closeMenu">Contact</a>
           <div class="m-divider"></div>
@@ -190,10 +214,20 @@ function logout() { customerAuth.logout(); closeMenu() }
         <div class="footer-links">
           <h4>Rewards & Help</h4>
           <RouterLink to="/shop/loyalty">Loyalty Programme</RouterLink>
+          <RouterLink to="/shop/gift">Gift Experiences</RouterLink>
           <a href="#">Delivery Policy</a>
           <a href="#">Allergen Information</a>
           <a href="#">Privacy Policy</a>
-          <a href="#">Terms & Conditions</a>
+        </div>
+
+        <div class="footer-links">
+          <h4>Experiences</h4>
+          <RouterLink to="/shop/flavor-compass">Flavor Compass</RouterLink>
+          <RouterLink to="/shop/horoscope">Coffee Horoscope</RouterLink>
+          <RouterLink to="/shop/blend-builder">Blend Builder</RouterLink>
+          <RouterLink to="/shop/passport">Coffee Passport</RouterLink>
+          <RouterLink to="/shop/waiting-room">Waiting Room</RouterLink>
+          <RouterLink to="/shop/decaf-confessions">Decaf Confessions</RouterLink>
         </div>
 
         <div class="footer-newsletter">
@@ -262,6 +296,15 @@ function logout() { customerAuth.logout(); closeMenu() }
 .roastery-m { color: #c8813a !important; font-weight: 600 !important; }
 .loyalty-link { display: flex; align-items: center; gap: 5px; }
 .loyalty-pts { font-size: 10px; font-weight: 800; background: #d4a060; color: #fff; border-radius: 10px; padding: 1px 6px; }
+
+.exp-menu-wrap { position: relative; }
+.exp-trigger { background: none; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; color: #57534e; padding: 7px 14px; border-radius: 8px; transition: all 0.15s; }
+.exp-trigger:hover { background: #fdf3e7; color: #92400e; }
+.exp-dropdown { display: none; position: absolute; top: calc(100% + 6px); left: 0; background: #fff; border: 1px solid #f0ebe4; border-radius: 14px; padding: 8px; min-width: 220px; box-shadow: 0 8px 32px rgba(28,16,8,0.12); z-index: 200; }
+.exp-menu-wrap:hover .exp-dropdown, .exp-menu-wrap:focus-within .exp-dropdown { display: flex; flex-direction: column; }
+.exp-item { display: block; padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #57534e; text-decoration: none; transition: background 0.15s; }
+.exp-item:hover { background: #fdf3e7; color: #92400e; }
+.m-section-label { font-size: 10px; font-weight: 700; color: #a8a29e; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 16px; margin: 0; }
 
 .header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .admin-link { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #78716c; border: 1px solid #e7e5e4; text-decoration: none; transition: all 0.15s; }

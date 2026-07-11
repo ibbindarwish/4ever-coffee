@@ -263,6 +263,47 @@ function addToCart() {
   toastVisible.value = true
   toastTimer = setTimeout(() => toastVisible.value = false, 3000)
 }
+
+import { useRoasteryStore } from '../../stores/roastery'
+const rs = useRoasteryStore()
+
+// Last Sip submission
+const sipText  = ref('')
+const sipBean  = ref('Ethiopian Yirgacheffe')
+const sipName  = ref('')
+const sipCity  = ref('')
+const sipSent  = ref(false)
+function submitSip() {
+  if (!sipText.value.trim() || !sipName.value.trim()) return
+  rs.submitLastSip(sipText.value, sipBean.value, sipName.value, sipCity.value || 'Somewhere')
+  sipText.value = ''; sipName.value = ''; sipCity.value = ''; sipSent.value = true
+  setTimeout(() => sipSent.value = false, 3000)
+}
+
+// Batch vote
+const votedBatch = ref<string | null>(null)
+function castVote(id: string) {
+  if (votedBatch.value) return
+  rs.voteForBatch(id); votedBatch.value = id
+}
+
+// Cold brew countdown
+const coldBrewReady = ref(false)
+const coldBrewHours = ref(18)
+const coldBrewMinutes = ref(0)
+let coldBrewInterval: ReturnType<typeof setInterval>
+function startColdBrew() {
+  coldBrewHours.value = 18; coldBrewMinutes.value = 0; coldBrewReady.value = false
+  clearInterval(coldBrewInterval)
+  coldBrewInterval = setInterval(() => {
+    if (coldBrewMinutes.value === 0) {
+      if (coldBrewHours.value === 0) { clearInterval(coldBrewInterval); coldBrewReady.value = true; return }
+      coldBrewHours.value--; coldBrewMinutes.value = 59
+    } else { coldBrewMinutes.value-- }
+  }, 1000)
+}
+import { onUnmounted } from 'vue'
+onUnmounted(() => clearInterval(coldBrewInterval))
 </script>
 
 <template>
@@ -973,6 +1014,94 @@ function addToCart() {
       </div>
     </section>
 
+    <!-- ── WHAT'S ROASTING TODAY ─────────────────────────────────── -->
+    <section class="roasting-section">
+      <div class="r-inner">
+        <p class="r-eyebrow">Live Roastery Floor</p>
+        <h2 class="r-title">What's Roasting Today</h2>
+        <div class="roasting-grid">
+          <div v-for="b in rs.roastingNow" :key="b.id" class="roasting-card">
+            <div class="rc-flag">{{ b.flag }}</div>
+            <div class="rc-info">
+              <div class="rc-bean">{{ b.bean }}</div>
+              <div class="rc-origin">{{ b.origin }} · {{ b.roastLevel }}</div>
+              <div class="rc-roaster">Roasted by {{ b.roaster }} · Started {{ b.startedAt }}</div>
+            </div>
+            <div class="rc-timer" :class="{ urgent: b.readyIn < 30 }">
+              <div class="rc-timer-num">{{ b.readyIn }}</div>
+              <div class="rc-timer-label">min left</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── COLD BREW COUNTDOWN ────────────────────────────────────── -->
+    <section class="coldbrew-section">
+      <div class="r-inner">
+        <div class="cb-card">
+          <div class="cb-left">
+            <div class="cb-icon">🧊</div>
+            <div>
+              <div class="cb-title">Start Your Cold Brew</div>
+              <div class="cb-sub">Rwanda Bourbon — steep for 18 hours. We'll count down with you.</div>
+            </div>
+          </div>
+          <div v-if="!coldBrewReady" class="cb-right">
+            <div class="cb-count">{{ String(coldBrewHours).padStart(2,'0') }}:{{ String(coldBrewMinutes).padStart(2,'0') }}</div>
+            <button class="cb-btn" @click="startColdBrew">{{ coldBrewHours === 18 ? 'Start Brewing' : 'Reset' }}</button>
+          </div>
+          <div v-else class="cb-ready">☕ Your cold brew is ready to drink!</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── NAME A BATCH ───────────────────────────────────────────── -->
+    <section class="batch-section">
+      <div class="r-inner">
+        <p class="r-eyebrow">Community Vote</p>
+        <h2 class="r-title" style="color:#fdf6ec">Name the New Batch</h2>
+        <p class="r-sub">Our newest Yemen Mokha lot needs a name. You decide.</p>
+        <div class="batch-grid">
+          <button
+            v-for="v in rs.batchVotes" :key="v.id"
+            class="batch-card" :class="{ voted: votedBatch === v.id, locked: votedBatch && votedBatch !== v.id }"
+            @click="castVote(v.id)"
+          >
+            <div class="batch-name">{{ v.name }}</div>
+            <div class="batch-sub">submitted by {{ v.submittedBy }}</div>
+            <div class="batch-votes">{{ v.votes + (votedBatch === v.id ? 1 : 0) }} votes</div>
+          </button>
+        </div>
+        <p v-if="votedBatch" class="batch-thanks">✓ Vote cast! Winner announced Friday.</p>
+      </div>
+    </section>
+
+    <!-- ── THE LAST SIP ───────────────────────────────────────────── -->
+    <section class="lastsip-section">
+      <div class="r-inner">
+        <p class="r-eyebrow">Community Wall</p>
+        <h2 class="r-title">The Last Sip</h2>
+        <p class="r-sub" style="color:#78716c">Finished a bag? Write one sentence about your last cup.</p>
+        <div class="sip-form">
+          <input v-model="sipName" class="sip-input" placeholder="Your name"/>
+          <input v-model="sipCity" class="sip-input" placeholder="Your city"/>
+          <select v-model="sipBean" class="sip-input">
+            <option v-for="b in ['Ethiopian Yirgacheffe','Colombian Supremo','Kenya AA','Guatemala Antigua','Sumatra Mandheling','Brazilian Santos','Panama Geisha','Rwanda Bourbon','Yemen Mokha']" :key="b">{{ b }}</option>
+          </select>
+          <textarea v-model="sipText" class="sip-textarea" placeholder="One sentence about your last cup…" rows="2"/>
+          <button class="sip-btn" @click="submitSip">Share Your Last Sip</button>
+          <p v-if="sipSent" class="sip-thanks">✓ Thank you for sharing.</p>
+        </div>
+        <div class="sip-wall">
+          <div v-for="s in rs.lastSips" :key="s.id" class="sip-card">
+            <p class="sip-text">"{{ s.text }}"</p>
+            <div class="sip-meta">{{ s.author }} · {{ s.city }} · {{ s.bean }}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Toast -->
     <Transition name="toast">
       <div v-if="toastVisible" class="toast">☕ {{ toast }}</div>
@@ -1650,4 +1779,61 @@ function addToCart() {
 .pvs-icon { font-size: 18px; }
 .pvs-div  { width: 1px; height: 28px; background: rgba(255,255,255,0.07); }
 @media (max-width: 768px) { .pvs-div { display: none; } .pvs-item { padding: 6px 12px; } }
+
+/* ── WHAT'S ROASTING TODAY ── */
+.roasting-section { background: #faf7f2; padding: 72px 24px; }
+.r-inner   { max-width: 960px; margin: 0 auto; }
+.r-eyebrow { font-size: 11px; font-weight: 700; color: #c8813a; text-transform: uppercase; letter-spacing: 0.12em; margin: 0 0 8px; }
+.r-title   { font-size: clamp(24px,4vw,36px); font-weight: 900; color: #1c1917; margin: 0 0 8px; font-family: 'Playfair Display', serif; }
+.r-sub     { font-size: 15px; color: #78716c; margin: 0 0 36px; }
+.roasting-grid { display: flex; flex-direction: column; gap: 14px; }
+.roasting-card { background: #fff; border: 1px solid #f0ebe4; border-radius: 16px; padding: 18px 22px; display: flex; align-items: center; gap: 16px; }
+.rc-flag   { font-size: 32px; flex-shrink: 0; }
+.rc-info   { flex: 1; }
+.rc-bean   { font-size: 16px; font-weight: 800; color: #1c1917; }
+.rc-origin { font-size: 12px; color: #78716c; margin: 2px 0; }
+.rc-roaster{ font-size: 11px; color: #a8a29e; }
+.rc-timer  { text-align: center; background: #fdf3e7; border: 1px solid rgba(200,129,58,0.2); border-radius: 12px; padding: 10px 18px; }
+.rc-timer.urgent { background: #fef9c3; border-color: rgba(202,138,4,0.3); }
+.rc-timer-num   { font-size: 24px; font-weight: 900; color: #c8813a; line-height: 1; }
+.rc-timer-label { font-size: 10px; color: #a8a29e; font-weight: 600; text-transform: uppercase; }
+
+/* ── COLD BREW COUNTDOWN ── */
+.coldbrew-section { background: #0d0603; padding: 48px 24px; }
+.cb-card  { max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.cb-left  { display: flex; align-items: center; gap: 16px; flex: 1; }
+.cb-icon  { font-size: 40px; }
+.cb-title { font-size: 18px; font-weight: 800; color: #fdf6ec; }
+.cb-sub   { font-size: 13px; color: #78716c; }
+.cb-right { display: flex; align-items: center; gap: 16px; }
+.cb-count { font-size: 42px; font-weight: 900; color: #d4a060; letter-spacing: -1px; font-family: 'Playfair Display', serif; }
+.cb-btn   { background: linear-gradient(135deg,#c8813a,#d4a060); color: #fff; border: none; border-radius: 10px; padding: 12px 24px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+.cb-ready { font-size: 18px; font-weight: 700; color: #4ade80; }
+
+/* ── NAME A BATCH ── */
+.batch-section { background: #1c1008; padding: 72px 24px; }
+.batch-section .r-title { color: #fdf6ec; }
+.batch-section .r-sub   { color: #78716c; }
+.batch-grid   { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 14px; margin: 32px 0 16px; }
+.batch-card   { background: rgba(255,255,255,0.04); border: 2px solid rgba(212,160,96,0.15); border-radius: 16px; padding: 22px 20px; text-align: center; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.batch-card:hover { border-color: rgba(212,160,96,0.5); background: rgba(212,160,96,0.06); }
+.batch-card.voted  { border-color: #d4a060; background: rgba(212,160,96,0.12); }
+.batch-card.locked { opacity: 0.4; cursor: not-allowed; }
+.batch-name   { font-size: 17px; font-weight: 800; color: #fdf6ec; margin-bottom: 4px; font-family: 'Playfair Display', serif; }
+.batch-sub    { font-size: 11px; color: #78716c; margin-bottom: 12px; }
+.batch-votes  { font-size: 20px; font-weight: 900; color: #d4a060; }
+.batch-thanks { color: #4ade80; font-weight: 600; text-align: center; margin-top: 8px; }
+
+/* ── THE LAST SIP ── */
+.lastsip-section { background: #faf7f2; padding: 72px 24px; }
+.sip-form   { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 32px; background: #fff; border: 1px solid #f0ebe4; border-radius: 16px; padding: 22px; }
+@media(max-width:600px) { .sip-form { grid-template-columns: 1fr; } }
+.sip-input  { padding: 12px 16px; border: 1px solid #e7e5e4; border-radius: 10px; font-size: 14px; font-family: inherit; background: #faf7f2; color: #1c1917; }
+.sip-textarea { grid-column: 1/-1; padding: 12px 16px; border: 1px solid #e7e5e4; border-radius: 10px; font-size: 14px; font-family: inherit; resize: none; background: #faf7f2; }
+.sip-btn    { grid-column: 1/-1; background: linear-gradient(135deg,#c8813a,#d4a060); color: #fff; border: none; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.sip-thanks { grid-column: 1/-1; text-align: center; color: #16a34a; font-weight: 600; margin: 0; }
+.sip-wall   { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 14px; }
+.sip-card   { background: #fff; border: 1px solid #f0ebe4; border-radius: 14px; padding: 18px 20px; }
+.sip-text   { font-size: 15px; color: #1c1917; font-style: italic; line-height: 1.65; margin: 0 0 10px; font-family: 'Playfair Display', serif; }
+.sip-meta   { font-size: 11px; color: #a8a29e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
 </style>

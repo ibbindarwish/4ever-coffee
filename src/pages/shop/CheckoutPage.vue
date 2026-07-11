@@ -13,12 +13,13 @@ const checkout = useCheckoutStore()
 const auth     = useAuthStore()
 
 const form   = ref({
-  name:    checkout.delivery.name    || '',
-  email:   checkout.delivery.email   || '',
-  phone:   checkout.delivery.phone   || '',
-  address: checkout.delivery.address || '',
-  city:    checkout.delivery.city    || '',
-  zip:     checkout.delivery.zip     || '',
+  name:       checkout.delivery.name    || '',
+  email:      checkout.delivery.email   || '',
+  phone:      checkout.delivery.phone   || '',
+  address:    checkout.delivery.address || '',
+  city:       checkout.delivery.city    || '',
+  zip:        checkout.delivery.zip     || '',
+  cupMessage: '',
 })
 const errors = ref<Partial<typeof form.value>>({})
 const promoInput = ref('')
@@ -126,10 +127,25 @@ function proceedToPayment() {
               </div>
             </div>
 
+            <!-- Cup message section -->
+            <div class="form-section">
+              <h3 class="form-section-title">
+                <span class="step-num">2</span> Message on Your Cup
+              </h3>
+              <div class="cup-msg-wrap">
+                <textarea v-model="form.cupMessage" class="input cup-msg-input" rows="2" maxlength="60"
+                          placeholder="e.g. Happy Birthday Sarah! ☕ or Good morning, you've got this!"></textarea>
+                <div class="cup-msg-meta">
+                  <span class="cup-msg-hint">Printed inside the lid. 60 chars max.</span>
+                  <span class="cup-msg-count">{{ (form.cupMessage || '').length }}/60</span>
+                </div>
+              </div>
+            </div>
+
             <!-- Promo code section -->
             <div class="form-section promo-section">
               <h3 class="form-section-title">
-                <span class="step-num">2</span> Promo Code
+                <span class="step-num">3</span> Promo Code
               </h3>
 
               <!-- Staff / Admin auto-applied benefit -->
@@ -163,7 +179,7 @@ function proceedToPayment() {
             </div>
 
             <button type="submit" class="place-btn">
-              🔒 Continue to Payment · £{{ finalTotal.toFixed(2) }} →
+              🔒 Continue to Payment &middot; £{{ finalTotal.toFixed(2) }} →
             </button>
           </form>
         </div>
@@ -272,6 +288,10 @@ label        { font-size: 11px; font-weight: 600; color: #78716c; text-transform
 
 .place-btn { background: linear-gradient(135deg,#c8813a,#d4a060); color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(200,129,58,0.35); }
 .place-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(200,129,58,0.5); }
+.cup-msg-input { resize: none; font-family: 'Playfair Display', serif; font-style: italic; }
+.cup-msg-meta { display: flex; justify-content: space-between; margin-top: 6px; }
+.cup-msg-hint { font-size: 11px; color: #a8a29e; }
+.cup-msg-count { font-size: 11px; color: #a8a29e; }
 
 /* Order summary */
 .order-summary { background: #fff; border: 1px solid #f0ebe4; border-radius: 16px; padding: 22px; position: sticky; top: 88px; }
