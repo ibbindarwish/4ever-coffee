@@ -177,6 +177,22 @@ let clockInterval: ReturnType<typeof setInterval>
 onUnmounted(() => clearInterval(clockInterval))
 function updateClock() { now.value = new Date() }
 
+// ── CONTACT FORM ──────────────────────────────────────────────────────────────
+const contactForm = ref({ name: '', email: '', subject: 'General Enquiry', message: '' })
+const contactSent = ref(false)
+const contactSending = ref(false)
+function submitContact() {
+  if (!contactForm.value.name || !contactForm.value.email || !contactForm.value.message) return
+  contactSending.value = true
+  setTimeout(() => { contactSending.value = false; contactSent.value = true }, 1200)
+}
+const isOpenNow = computed(() => {
+  const h = now.value.getHours()
+  const day = now.value.getDay()
+  if (day === 0 || day === 6) return h >= 8 && h < 23
+  return h >= 7 && h < 22
+})
+
 const clockRec = computed(() => {
   const h = now.value.getHours()
   if (h >= 5  && h < 9)  return { label: 'Morning Ritual',    bean: 'Ethiopian Yirgacheffe', brew: 'Pour Over',    why: 'Light, floral, and bright — the perfect morning awakening.' }
@@ -918,33 +934,372 @@ const weatherRec = computed(() => {
       </div>
     </section>
 
-    <!-- ── ABOUT ─────────────────────────────────────────────── -->
-    <section class="about" id="about">
-      <div class="section-inner about-inner">
-        <div class="about-visual">
-          <div class="about-frame">
-            <div class="about-cups-grid">
-              <div v-for="p in store.products.slice(0, 4)" :key="p.id" class="about-mini">
-                <div class="about-mini-bg" :style="{ background: p.gradient }"></div>
-                <img :src="p.image" :alt="p.name" class="about-mini-photo" @error="() => {}"/>
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- ABOUT — World-class redesign                                         -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <section id="about">
+
+      <!-- 1 ── Manifesto banner ──────────────────────────────────────── -->
+      <div class="about-manifesto">
+        <div class="am-inner">
+          <div class="am-quote">"</div>
+          <h2 class="am-text">We don't sell coffee.<br/>We sell the best moment of your day.</h2>
+          <div class="am-author">— Omar, Head Roaster &amp; Co-founder</div>
+        </div>
+      </div>
+
+      <!-- 2 ── Stats strip ───────────────────────────────────────────── -->
+      <div class="about-stats-strip">
+        <div class="as-inner">
+          <div class="as-item"><span class="as-num">2019</span><span class="as-label">Founded in Dubai</span></div>
+          <div class="as-div"></div>
+          <div class="as-item"><span class="as-num">50K+</span><span class="as-label">Happy Customers</span></div>
+          <div class="as-div"></div>
+          <div class="as-item"><span class="as-num">18</span><span class="as-label">Countries Sourced</span></div>
+          <div class="as-div"></div>
+          <div class="as-item"><span class="as-num">4.9★</span><span class="as-label">Average Rating</span></div>
+          <div class="as-div"></div>
+          <div class="as-item"><span class="as-num">100%</span><span class="as-label">Direct Trade</span></div>
+        </div>
+      </div>
+
+      <!-- 3 ── Story + visual ────────────────────────────────────────── -->
+      <div class="about-story-wrap">
+        <div class="as-story-inner">
+          <div class="as-story-text reveal">
+            <p class="section-eyebrow">Our Story</p>
+            <h2 class="section-title">Born in a garage.<br/>Raised on great taste.</h2>
+            <p class="about-body">It started with two friends, one broken espresso machine, and an obsession with finding out why the coffee in Dubai didn't taste like what they'd had in Addis Ababa and Bogotá.</p>
+            <p class="about-body">Seven years later, 4ever Coffee sources directly from 18 origins across 5 continents, roasts in-house every morning, and delivers to your door within hours. The obsession never changed — only the scale.</p>
+            <div class="as-story-badges">
+              <div class="as-badge">🏆 Best Specialty Roastery — UAE 2024</div>
+              <div class="as-badge">🌱 100% Carbon Neutral since 2022</div>
+              <div class="as-badge">☕ World Barista Finalist, 2023</div>
+            </div>
+          </div>
+          <div class="as-story-visual reveal">
+            <div class="as-visual-card main-card">
+              <div class="as-visual-orb orb1"></div>
+              <div class="as-visual-orb orb2"></div>
+              <div class="as-visual-icon">☕</div>
+              <div class="as-visual-label">Roasted fresh daily</div>
+              <div class="as-visual-sub">Single-origins · Direct trade</div>
+            </div>
+            <div class="as-visual-side">
+              <div class="as-visual-card side-card sc1">
+                <div class="sc-icon">🌍</div>
+                <div class="sc-text">18 origins<br/>sourced directly</div>
+              </div>
+              <div class="as-visual-card side-card sc2">
+                <div class="sc-icon">🔬</div>
+                <div class="sc-text">Every lot<br/>cupped & scored</div>
+              </div>
+              <div class="as-visual-card side-card sc3">
+                <div class="sc-icon">📦</div>
+                <div class="sc-text">Ships within<br/>4 hours</div>
               </div>
             </div>
           </div>
         </div>
-        <div class="about-text">
-          <p class="section-eyebrow">Our Story</p>
-          <h2 class="section-title">Born from a love<br/>of great coffee.</h2>
-          <p class="about-body">
-            4ever Coffee started with a simple belief: everyone deserves a truly great cup. We source only the finest single-origin beans, roasted to perfection, and craft every drink with care and precision.
-          </p>
-          <p class="about-body">
-            Whether you're starting your morning or taking an afternoon break, we're here — brewing your moment, forever.
-          </p>
-          <div class="pillars">
-            <div class="pillar"><span class="pillar-icon">🌍</span><div><div class="p-title">Ethically Sourced</div><div class="p-sub">Direct-trade beans from top farms</div></div></div>
-            <div class="pillar"><span class="pillar-icon">🚴</span><div><div class="p-title">Fast Delivery</div><div class="p-sub">Free on all orders over £30</div></div></div>
-            <div class="pillar"><span class="pillar-icon">♻</span><div><div class="p-title">Eco Packaging</div><div class="p-sub">100% compostable cups & lids</div></div></div>
+      </div>
+
+      <!-- 4 ── Timeline ──────────────────────────────────────────────── -->
+      <div class="about-timeline">
+        <div class="at-inner">
+          <p class="section-eyebrow" style="text-align:center;color:#d4a060">Our Journey</p>
+          <h2 class="section-title at-title reveal">Seven years of relentless pursuit.</h2>
+          <div class="timeline-track">
+            <div class="timeline-line"></div>
+            <div class="tl-item reveal">
+              <div class="tl-dot"></div>
+              <div class="tl-year">2019</div>
+              <div class="tl-card">
+                <div class="tl-title">The First Roast</div>
+                <div class="tl-body">Omar and Sara hand-roast their first 2kg batch of Ethiopian Yirgacheffe in a rented garage. The neighbourhood notices the smell. No complaints.</div>
+              </div>
+            </div>
+            <div class="tl-item reveal">
+              <div class="tl-dot"></div>
+              <div class="tl-year">2020</div>
+              <div class="tl-card">
+                <div class="tl-title">First Café Opens</div>
+                <div class="tl-body">Downtown Dubai. 12 seats. No sign outside. Word-of-mouth only. Queue forms by week two. The city had been waiting for this.</div>
+              </div>
+            </div>
+            <div class="tl-item reveal">
+              <div class="tl-dot"></div>
+              <div class="tl-year">2022</div>
+              <div class="tl-card">
+                <div class="tl-title">Direct Trade Certified</div>
+                <div class="tl-body">We fly to origin. Meet farmers. Pay above Fair Trade price on every single lot. Full supply chain transparency published on our website.</div>
+              </div>
+            </div>
+            <div class="tl-item reveal">
+              <div class="tl-dot"></div>
+              <div class="tl-year">2024</div>
+              <div class="tl-card">
+                <div class="tl-title">Award-Winning Roastery</div>
+                <div class="tl-body">Named Best Specialty Roastery in the UAE. Our Panama Geisha scored 96 points at the Gulf Cup — the highest-ever score for a regional roaster.</div>
+              </div>
+            </div>
+            <div class="tl-item reveal">
+              <div class="tl-dot tl-dot-now"></div>
+              <div class="tl-year tl-now">Now</div>
+              <div class="tl-card tl-card-now">
+                <div class="tl-title">50,000+ Customers & Counting</div>
+                <div class="tl-body">Same obsession. Bigger roaster. Better beans. We're just getting started.</div>
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
+
+      <!-- 5 ── Values ────────────────────────────────────────────────── -->
+      <div class="about-values">
+        <div class="av-inner">
+          <p class="section-eyebrow" style="text-align:center">What We Stand For</p>
+          <h2 class="section-title av-title reveal">Not a single compromise.</h2>
+          <div class="values-grid">
+            <div class="value-card reveal">
+              <div class="vc-icon">🌱</div>
+              <div class="vc-title">Direct Trade Only</div>
+              <div class="vc-body">We pay farmers 30–60% above commodity price. We visit every farm we buy from. No middlemen. No guessing where your coffee came from.</div>
+            </div>
+            <div class="value-card reveal">
+              <div class="vc-icon">🔥</div>
+              <div class="vc-title">Roasted to Order</div>
+              <div class="vc-body">Every bag is roasted within 48 hours of your order. We never pre-roast and shelf. Freshness isn't a feature — it's the entire point.</div>
+            </div>
+            <div class="value-card reveal">
+              <div class="vc-icon">🧪</div>
+              <div class="vc-title">Scored Before It Ships</div>
+              <div class="vc-body">Every lot we buy is cupped, scored, and approved by our roasters. If it doesn't hit 84+, it doesn't leave our facility. Full stop.</div>
+            </div>
+            <div class="value-card reveal">
+              <div class="vc-icon">♻️</div>
+              <div class="vc-title">Carbon Neutral</div>
+              <div class="vc-body">Compostable packaging, renewable energy in our roastery, and verified carbon offsets for every shipment. We take this seriously.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6 ── Team ──────────────────────────────────────────────────── -->
+      <div class="about-team">
+        <div class="ateam-inner">
+          <p class="section-eyebrow" style="text-align:center;color:#d4a060">The People Behind the Cup</p>
+          <h2 class="section-title ateam-title reveal">Meet the Roasters.</h2>
+          <div class="team-grid">
+            <div class="team-card reveal">
+              <div class="tc-avatar">👨‍🍳</div>
+              <div class="tc-name">Omar Al-Rashid</div>
+              <div class="tc-role">Co-founder · Head Roaster</div>
+              <p class="tc-quote">"The moment I tasted my first natural-process Ethiopian, I knew I couldn't go back to anything less. That was 2017. I've been chasing that moment ever since."</p>
+              <div class="tc-bean">Favourite: <strong>Panama Geisha, Natural</strong></div>
+            </div>
+            <div class="team-card reveal">
+              <div class="tc-avatar">👩‍🔬</div>
+              <div class="tc-name">Sara Al-Mansoori</div>
+              <div class="tc-role">Co-founder · Head of Sourcing</div>
+              <p class="tc-quote">"I've visited 40+ farms across 14 countries. The farmers who grow the best coffee are some of the most remarkable people I've ever met. We owe them everything."</p>
+              <div class="tc-bean">Favourite: <strong>Ethiopia Yirgacheffe, Washed</strong></div>
+            </div>
+            <div class="team-card reveal">
+              <div class="tc-avatar">👨‍🏫</div>
+              <div class="tc-name">Khalid Mansoor</div>
+              <div class="tc-role">Lead Barista · Coffee Educator</div>
+              <p class="tc-quote">"Extraction is 50% science, 50% listening. I've made over 100,000 espressos. Every single one teaches me something new."</p>
+              <div class="tc-bean">Favourite: <strong>Yemen Mokha, Turkish brew</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7 ── Press / awards ─────────────────────────────────────────── -->
+      <div class="about-press">
+        <div class="ap-inner">
+          <p class="ap-label">As seen in</p>
+          <div class="press-row">
+            <div class="press-item">Gulf Business</div>
+            <div class="press-div"></div>
+            <div class="press-item">Time Out Dubai</div>
+            <div class="press-div"></div>
+            <div class="press-item">Esquire ME</div>
+            <div class="press-div"></div>
+            <div class="press-item">The National</div>
+            <div class="press-div"></div>
+            <div class="press-item">Monocle</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- CONTACT — World-class redesign                                        -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <section id="contact" class="contact-section-new">
+
+      <!-- Top bar -->
+      <div class="csn-topbar">
+        <div class="csn-topbar-inner">
+          <div class="csn-open-indicator" :class="{ open: isOpenNow }">
+            <span class="csn-open-dot"></span>
+            <span>{{ isOpenNow ? 'Open now' : 'Closed now' }}</span>
+          </div>
+          <div class="csn-tagline">We reply within 2 hours during opening hours</div>
+        </div>
+      </div>
+
+      <div class="csn-main">
+        <div class="csn-inner">
+
+          <!-- Left: info ─────────────────────────────────────── -->
+          <div class="csn-left reveal">
+            <p class="section-eyebrow light">Get in Touch</p>
+            <h2 class="csn-title">We're here.<br/>Always.</h2>
+            <p class="csn-sub">Got a question, a wholesale enquiry, or just want to geek out about coffee? We read every message.</p>
+
+            <!-- Contact channels -->
+            <div class="csn-channels">
+              <a href="mailto:hello@4evercoffee.ae" class="csn-ch">
+                <div class="csn-ch-icon email-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 6 10-6"/></svg>
+                </div>
+                <div class="csn-ch-info">
+                  <div class="csn-ch-label">Email</div>
+                  <div class="csn-ch-val">hello@4evercoffee.ae</div>
+                  <div class="csn-ch-note">Replies within 2 hrs</div>
+                </div>
+              </a>
+              <a href="tel:+97150888888" class="csn-ch">
+                <div class="csn-ch-icon phone-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.89 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.8 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.05 6.05l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                </div>
+                <div class="csn-ch-info">
+                  <div class="csn-ch-label">Phone</div>
+                  <div class="csn-ch-val">+971 50 888 8888</div>
+                  <div class="csn-ch-note">Daily 7 AM – 10 PM GST</div>
+                </div>
+              </a>
+              <a href="https://wa.me/97150888888" class="csn-ch csn-ch-wa">
+                <div class="csn-ch-icon wa-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                </div>
+                <div class="csn-ch-info">
+                  <div class="csn-ch-label">WhatsApp</div>
+                  <div class="csn-ch-val">+971 50 888 8888</div>
+                  <div class="csn-ch-note">Quick replies, 7 days</div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Location card -->
+            <div class="csn-location">
+              <div class="csn-loc-map">
+                <div class="csn-loc-grid"></div>
+                <div class="csn-loc-pin">📍</div>
+                <div class="csn-loc-rings">
+                  <div class="csn-loc-ring r1"></div>
+                  <div class="csn-loc-ring r2"></div>
+                </div>
+              </div>
+              <div class="csn-loc-info">
+                <div class="csn-loc-name">4ever Coffee Roastery</div>
+                <div class="csn-loc-addr">Unit 4B, Al Quoz Industrial Area 3<br/>Dubai, United Arab Emirates</div>
+                <a href="https://maps.google.com" class="csn-loc-link" target="_blank" rel="noopener">Open in Maps →</a>
+              </div>
+            </div>
+
+            <!-- Hours -->
+            <div class="csn-hours">
+              <div class="csn-hours-title">Opening Hours</div>
+              <div class="csn-hour-row" :class="{ today: [1,2,3,4,5].includes(now.getDay()) }">
+                <span>Monday – Friday</span><span>7:00 AM – 10:00 PM</span>
+              </div>
+              <div class="csn-hour-row" :class="{ today: [0,6].includes(now.getDay()) }">
+                <span>Saturday – Sunday</span><span>8:00 AM – 11:00 PM</span>
+              </div>
+              <div class="csn-hours-tz">Gulf Standard Time (GST, UTC+4)</div>
+            </div>
+
+            <!-- Social -->
+            <div class="csn-social">
+              <a href="#" class="csn-soc-btn" title="Instagram">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+              </a>
+              <a href="#" class="csn-soc-btn" title="X / Twitter">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.713 5.923zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+              <a href="#" class="csn-soc-btn" title="TikTok">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.72a4.85 4.85 0 0 1-1.01-.03z"/></svg>
+              </a>
+              <a href="#" class="csn-soc-btn" title="LinkedIn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Right: form ─────────────────────────────────────── -->
+          <div class="csn-right reveal">
+            <div class="csn-form-card">
+              <template v-if="!contactSent">
+                <div class="csn-form-header">
+                  <h3 class="csn-form-title">Send us a message</h3>
+                  <p class="csn-form-sub">We read every message and reply personally — no bots.</p>
+                </div>
+                <form class="csn-form" @submit.prevent="submitContact">
+                  <div class="csn-form-row">
+                    <div class="csn-form-group">
+                      <label class="csn-label">Your Name</label>
+                      <input v-model="contactForm.name" class="csn-input" placeholder="Ahmad Al-Farsi" required />
+                    </div>
+                    <div class="csn-form-group">
+                      <label class="csn-label">Email Address</label>
+                      <input v-model="contactForm.email" type="email" class="csn-input" placeholder="ahmad@example.com" required />
+                    </div>
+                  </div>
+                  <div class="csn-form-group">
+                    <label class="csn-label">Subject</label>
+                    <select v-model="contactForm.subject" class="csn-input csn-select">
+                      <option>General Enquiry</option>
+                      <option>Order Issue</option>
+                      <option>Wholesale / B2B</option>
+                      <option>Catering Enquiry</option>
+                      <option>Subscription</option>
+                      <option>Press & Media</option>
+                      <option>Just Want to Chat About Coffee</option>
+                    </select>
+                  </div>
+                  <div class="csn-form-group">
+                    <label class="csn-label">Message</label>
+                    <textarea v-model="contactForm.message" class="csn-textarea" rows="5"
+                              placeholder="Tell us what's on your mind…" required></textarea>
+                  </div>
+                  <button type="submit" class="csn-submit" :class="{ loading: contactSending }">
+                    <span v-if="contactSending">Sending…</span>
+                    <span v-else>Send Message →</span>
+                  </button>
+                </form>
+              </template>
+              <div v-else class="csn-success">
+                <div class="csn-success-icon">✓</div>
+                <h3 class="csn-success-title">Message Received</h3>
+                <p class="csn-success-sub">Thanks, {{ contactForm.name.split(' ')[0] }}. We'll reply to <strong>{{ contactForm.email }}</strong> within 2 hours.</p>
+                <button class="csn-again-btn" @click="contactSent = false; contactForm.message = ''">Send another message</button>
+              </div>
+            </div>
+
+            <!-- Wholesale CTA -->
+            <div class="csn-wholesale">
+              <div class="csn-ws-text">
+                <div class="csn-ws-title">Wholesale & B2B Enquiries</div>
+                <div class="csn-ws-sub">Supplying hotels, restaurants, and offices across the UAE and GCC.</div>
+              </div>
+              <a href="mailto:wholesale@4evercoffee.ae" class="csn-ws-btn">Email Wholesale Team</a>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -1221,51 +1576,198 @@ const weatherRec = computed(() => {
 .view-all-btn { display: inline-block; border: 1.5px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); border-radius: 12px; padding: 13px 32px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.2s; }
 .view-all-btn:hover { border-color: #d4a060; color: #d4a060; background: rgba(212,160,96,0.1); }
 
-/* ── ABOUT ──────────────────────────────────────── */
-.about { padding: 88px 0; background: #fff; }
-.about-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
-@media (max-width: 900px) { .about-inner { grid-template-columns: 1fr; } }
-.about-frame { background: linear-gradient(145deg, #fdf3e7, #fef9c3); border-radius: 24px; padding: 36px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 60px rgba(200,129,58,0.12); }
-.about-cups-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.about-mini { border-radius: 16px; overflow: hidden; position: relative; aspect-ratio: 1; box-shadow: 0 8px 24px rgba(44,16,8,0.12); }
-.about-mini-bg { position: absolute; inset: 0; }
-.about-mini-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
-.about-body { font-size: 15px; color: #57534e; line-height: 1.75; margin: 0 0 16px; }
-.pillars { display: flex; flex-direction: column; gap: 16px; margin-top: 28px; }
-.pillar { display: flex; align-items: flex-start; gap: 14px; }
-.pillar-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
-.p-title { font-size: 14px; font-weight: 700; color: #1c1917; margin-bottom: 2px; }
-.p-sub   { font-size: 13px; color: #78716c; }
+/* ══════════════════════════════════════════════════
+   ABOUT — World-class redesign
+   ══════════════════════════════════════════════════ */
 
-/* ── CONTACT ────────────────────────────────────── */
-.contact-section { padding: 88px 0; background: linear-gradient(135deg, #0d0603, #1a0a04, #2c1008); }
-.contact-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
-@media (max-width: 880px) { .contact-inner { grid-template-columns: 1fr; gap: 48px; } }
-.contact-title { font-size: clamp(24px, 4vw, 34px); font-weight: 900; color: #fdf6ec; margin: 0 0 12px; letter-spacing: -1px; }
-.contact-sub { font-size: 14px; color: #94a3b8; line-height: 1.7; margin: 0 0 28px; }
-.contact-cards { display: flex; flex-direction: column; gap: 12px; }
-.cc { display: flex; align-items: flex-start; gap: 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px 20px; text-decoration: none; transition: all 0.2s; }
-.cc:hover { background: rgba(255,255,255,0.09); border-color: #d4a060; transform: translateX(3px); }
-.cc.whatsapp:hover { border-color: #25d366; }
-.cc-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(212,160,96,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #d4a060; }
-.cc-icon svg { width: 18px; height: 18px; }
-.wa-icon { background: rgba(37,211,102,0.15); color: #25d366; }
-.cc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #78716c; margin-bottom: 3px; }
-.cc-val   { font-size: 14px; font-weight: 700; color: #fdf6ec; margin-bottom: 2px; }
-.cc-note  { font-size: 12px; color: #64748b; }
-.nl-title { font-size: clamp(20px, 3vw, 28px); font-weight: 900; color: #fdf6ec; margin: 0 0 10px; letter-spacing: -0.5px; }
-.nl-sub   { font-size: 14px; color: #94a3b8; margin: 0 0 22px; line-height: 1.6; }
-.nl-form  { display: flex; gap: 8px; margin-bottom: 10px; }
-.nl-input { flex: 1; padding: 12px 16px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #fdf6ec; font-size: 14px; outline: none; }
-.nl-input::placeholder { color: #64748b; }
-.nl-input:focus { border-color: #d4a060; }
-.nl-btn { background: #d4a060; color: #fff; border: none; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
-.nl-btn:hover { background: #c8813a; }
-.nl-note { font-size: 12px; color: #475569; }
-.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 24px 0; }
-.hours-title { font-size: 12px; font-weight: 700; color: #d4a060; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
-.hours-row { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.hours-tz  { font-size: 11px; color: #475569; margin-top: 10px; }
+/* 1 · Manifesto */
+.about-manifesto { background: linear-gradient(160deg, #0d0603 0%, #1c1008 50%, #2d1a0a 100%); padding: 100px 24px; text-align: center; position: relative; overflow: hidden; }
+.about-manifesto::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 120%, rgba(212,160,96,0.12), transparent 70%); pointer-events: none; }
+.am-inner { max-width: 860px; margin: 0 auto; position: relative; }
+.am-quote { font-size: 120px; line-height: 0.6; color: rgba(212,160,96,0.15); font-family: 'Playfair Display', serif; font-weight: 900; margin-bottom: 16px; display: block; }
+.am-text { font-size: clamp(28px, 5vw, 52px); font-weight: 900; color: #fdf6ec; font-family: 'Playfair Display', serif; line-height: 1.2; margin: 0 0 28px; letter-spacing: -1px; }
+.am-author { font-size: 14px; color: #78716c; font-style: italic; letter-spacing: 0.04em; }
+
+/* 2 · Stats strip */
+.about-stats-strip { background: #fdf6ec; border-top: 1px solid #f0ebe4; border-bottom: 1px solid #f0ebe4; padding: 0; }
+.as-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: flex; align-items: stretch; overflow-x: auto; }
+.as-item { display: flex; flex-direction: column; align-items: center; padding: 32px 40px; flex-shrink: 0; gap: 4px; }
+.as-num { font-size: clamp(28px, 4vw, 40px); font-weight: 900; color: #1c1917; font-family: 'Playfair Display', serif; line-height: 1; }
+.as-label { font-size: 11px; font-weight: 700; color: #a8a29e; text-transform: uppercase; letter-spacing: 0.1em; }
+.as-div { width: 1px; background: #f0ebe4; flex-shrink: 0; margin: 16px 0; }
+
+/* 3 · Story */
+.about-story-wrap { background: #fff; padding: 96px 24px; }
+.as-story-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; }
+@media (max-width: 900px) { .as-story-inner { grid-template-columns: 1fr; gap: 48px; } }
+.about-body { font-size: 16px; color: #57534e; line-height: 1.8; margin: 0 0 18px; }
+.as-story-badges { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+.as-badge { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #57534e; background: #faf7f2; border: 1px solid #f0ebe4; border-radius: 10px; padding: 10px 16px; }
+.as-story-visual { display: flex; gap: 14px; }
+.as-visual-card { border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+.main-card { background: linear-gradient(145deg, #1c1008, #2d1a0a); flex: 1; min-height: 260px; position: relative; overflow: hidden; gap: 10px; box-shadow: 0 20px 60px rgba(28,16,8,0.3); }
+.as-visual-orb { position: absolute; border-radius: 50%; pointer-events: none; }
+.orb1 { width: 200px; height: 200px; background: radial-gradient(circle, rgba(212,160,96,0.18), transparent); top: -60px; right: -60px; }
+.orb2 { width: 140px; height: 140px; background: radial-gradient(circle, rgba(200,129,58,0.12), transparent); bottom: -40px; left: -40px; }
+.as-visual-icon { font-size: 52px; position: relative; z-index: 1; }
+.as-visual-label { font-size: 15px; font-weight: 800; color: #fdf6ec; position: relative; z-index: 1; }
+.as-visual-sub { font-size: 12px; color: #78716c; position: relative; z-index: 1; }
+.as-visual-side { display: flex; flex-direction: column; gap: 10px; }
+.side-card { background: #faf7f2; border: 1px solid #f0ebe4; gap: 8px; min-width: 130px; }
+.sc1 { background: #fff9f0; border-color: rgba(200,129,58,0.2); }
+.sc2 { background: #f0fdf4; border-color: rgba(22,163,74,0.15); }
+.sc3 { background: #eff6ff; border-color: rgba(59,130,246,0.15); }
+.sc-icon { font-size: 24px; }
+.sc-text { font-size: 12px; font-weight: 700; color: #1c1917; line-height: 1.5; }
+
+/* 4 · Timeline */
+.about-timeline { background: #0d0603; padding: 96px 24px; }
+.at-inner { max-width: 960px; margin: 0 auto; }
+.at-title { color: #fdf6ec; text-align: center; margin-bottom: 56px; }
+.timeline-track { position: relative; padding-left: 32px; }
+.timeline-line { position: absolute; left: 10px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(to bottom, #d4a060, rgba(212,160,96,0.1)); }
+.tl-item { position: relative; margin-bottom: 44px; }
+.tl-item:last-child { margin-bottom: 0; }
+.tl-dot { position: absolute; left: -28px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: #1c1008; border: 2px solid #d4a060; }
+.tl-dot-now { background: #d4a060; box-shadow: 0 0 0 4px rgba(212,160,96,0.25); }
+.tl-year { font-size: 11px; font-weight: 800; color: #d4a060; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; }
+.tl-now { color: #4ade80; }
+.tl-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px 22px; }
+.tl-card-now { border-color: rgba(74,222,128,0.2); background: rgba(74,222,128,0.04); }
+.tl-title { font-size: 16px; font-weight: 800; color: #fdf6ec; margin-bottom: 8px; font-family: 'Playfair Display', serif; }
+.tl-body { font-size: 14px; color: #78716c; line-height: 1.7; margin: 0; }
+
+/* 5 · Values */
+.about-values { background: #faf7f2; padding: 96px 24px; }
+.av-inner { max-width: 1100px; margin: 0 auto; }
+.av-title { text-align: center; margin-bottom: 48px; }
+.values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.value-card { background: #fff; border: 1px solid #f0ebe4; border-radius: 20px; padding: 32px 26px; transition: all 0.25s; }
+.value-card:hover { transform: translateY(-5px); box-shadow: 0 16px 48px rgba(28,16,8,0.1); border-color: rgba(200,129,58,0.2); }
+.vc-icon { font-size: 36px; margin-bottom: 16px; }
+.vc-title { font-size: 16px; font-weight: 800; color: #1c1917; margin-bottom: 10px; font-family: 'Playfair Display', serif; }
+.vc-body { font-size: 14px; color: #78716c; line-height: 1.75; margin: 0; }
+
+/* 6 · Team */
+.about-team { background: #1c1008; padding: 96px 24px; }
+.ateam-inner { max-width: 1100px; margin: 0 auto; }
+.ateam-title { color: #fdf6ec; text-align: center; margin-bottom: 48px; }
+.team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.team-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 32px 26px; transition: all 0.25s; }
+.team-card:hover { border-color: rgba(212,160,96,0.35); background: rgba(255,255,255,0.07); transform: translateY(-4px); }
+.tc-avatar { font-size: 48px; margin-bottom: 16px; }
+.tc-name { font-size: 18px; font-weight: 900; color: #fdf6ec; font-family: 'Playfair Display', serif; margin-bottom: 4px; }
+.tc-role { font-size: 11px; font-weight: 700; color: #d4a060; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+.tc-quote { font-size: 14px; color: #78716c; line-height: 1.75; font-style: italic; font-family: 'Playfair Display', serif; margin: 0 0 16px; }
+.tc-bean { font-size: 12px; color: #57534e; }
+.tc-bean strong { color: #d4a060; }
+
+/* 7 · Press */
+.about-press { background: #fff; border-top: 1px solid #f0ebe4; border-bottom: 1px solid #f0ebe4; padding: 32px 24px; }
+.ap-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center; }
+.ap-label { font-size: 11px; font-weight: 700; color: #a8a29e; text-transform: uppercase; letter-spacing: 0.12em; flex-shrink: 0; }
+.press-row { display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: center; }
+.press-item { font-size: 15px; font-weight: 800; color: #d1ccc7; letter-spacing: 0.04em; padding: 4px 24px; font-family: 'Playfair Display', serif; transition: color 0.2s; }
+.press-item:hover { color: #1c1917; }
+.press-div { width: 1px; height: 18px; background: #f0ebe4; }
+
+/* ══════════════════════════════════════════════════
+   CONTACT — World-class redesign
+   ══════════════════════════════════════════════════ */
+.contact-section-new { background: linear-gradient(180deg, #0d0603 0%, #1a0804 100%); }
+
+/* Top bar */
+.csn-topbar { background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 12px 24px; }
+.csn-topbar-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.csn-open-indicator { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #78716c; }
+.csn-open-indicator.open { color: #4ade80; }
+.csn-open-dot { width: 8px; height: 8px; border-radius: 50%; background: #57534e; }
+.csn-open-indicator.open .csn-open-dot { background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.25); animation: blink 2s infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.csn-tagline { font-size: 12px; color: #44403c; }
+
+/* Main grid */
+.csn-main { padding: 80px 24px; }
+.csn-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.1fr; gap: 60px; align-items: start; }
+@media (max-width: 900px) { .csn-inner { grid-template-columns: 1fr; gap: 48px; } }
+
+/* Left */
+.csn-title { font-size: clamp(32px, 5vw, 52px); font-weight: 900; color: #fdf6ec; font-family: 'Playfair Display', serif; margin: 8px 0 14px; line-height: 1.15; letter-spacing: -1px; }
+.csn-sub { font-size: 15px; color: #78716c; line-height: 1.7; margin: 0 0 32px; }
+
+.csn-channels { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.csn-ch { display: flex; align-items: flex-start; gap: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 16px 18px; text-decoration: none; transition: all 0.2s; }
+.csn-ch:hover { border-color: rgba(212,160,96,0.4); background: rgba(212,160,96,0.06); transform: translateX(4px); }
+.csn-ch-wa:hover { border-color: rgba(37,211,102,0.4); }
+.csn-ch-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.email-icon { background: rgba(212,160,96,0.15); color: #d4a060; }
+.phone-icon { background: rgba(96,165,250,0.12); color: #60a5fa; }
+.wa-icon    { background: rgba(37,211,102,0.12); color: #25d366; }
+.csn-ch-icon svg { width: 18px; height: 18px; }
+.csn-ch-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: #57534e; margin-bottom: 3px; }
+.csn-ch-val   { font-size: 14px; font-weight: 700; color: #fdf6ec; margin-bottom: 2px; }
+.csn-ch-note  { font-size: 12px; color: #44403c; }
+
+/* Location card */
+.csn-location { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; display: flex; gap: 16px; align-items: center; margin-bottom: 24px; }
+.csn-loc-map { width: 72px; height: 72px; border-radius: 12px; background: rgba(212,160,96,0.08); border: 1px solid rgba(212,160,96,0.15); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; flex-shrink: 0; }
+.csn-loc-grid { position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, rgba(212,160,96,0.08) 0px, transparent 1px, transparent 12px), repeating-linear-gradient(90deg, rgba(212,160,96,0.08) 0px, transparent 1px, transparent 12px); }
+.csn-loc-pin { font-size: 24px; position: relative; z-index: 2; }
+.csn-loc-rings { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); }
+.csn-loc-ring { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); border-radius: 50%; border: 1px solid rgba(212,160,96,0.3); animation: expand 2s infinite; }
+.r1 { width: 20px; height: 20px; animation-delay: 0s; }
+.r2 { width: 34px; height: 34px; animation-delay: 0.5s; }
+@keyframes expand { 0% { opacity: 1; transform: translateX(-50%) scale(0.4); } 100% { opacity: 0; transform: translateX(-50%) scale(1); } }
+.csn-loc-name { font-size: 14px; font-weight: 800; color: #fdf6ec; margin-bottom: 4px; }
+.csn-loc-addr { font-size: 12px; color: #78716c; line-height: 1.6; margin-bottom: 8px; }
+.csn-loc-link { font-size: 12px; font-weight: 700; color: #d4a060; text-decoration: none; }
+
+/* Hours */
+.csn-hours { margin-bottom: 24px; }
+.csn-hours-title { font-size: 10px; font-weight: 700; color: #d4a060; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 10px; }
+.csn-hour-row { display: flex; justify-content: space-between; font-size: 13px; color: #57534e; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.csn-hour-row.today { color: #fdf6ec; font-weight: 600; }
+.csn-hours-tz { font-size: 11px; color: #44403c; margin-top: 8px; }
+
+/* Social */
+.csn-social { display: flex; gap: 10px; }
+.csn-soc-btn { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: #57534e; text-decoration: none; transition: all 0.2s; }
+.csn-soc-btn:hover { background: #d4a060; border-color: #d4a060; color: #fff; transform: translateY(-2px); }
+.csn-soc-btn svg { width: 16px; height: 16px; }
+
+/* Right: form card */
+.csn-form-card { background: #fff; border-radius: 24px; padding: 36px 32px; margin-bottom: 16px; }
+.csn-form-header { margin-bottom: 24px; }
+.csn-form-title { font-size: 22px; font-weight: 900; color: #1c1917; font-family: 'Playfair Display', serif; margin: 0 0 6px; }
+.csn-form-sub { font-size: 13px; color: #a8a29e; margin: 0; }
+.csn-form { display: flex; flex-direction: column; gap: 14px; }
+.csn-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .csn-form-row { grid-template-columns: 1fr; } }
+.csn-form-group { display: flex; flex-direction: column; gap: 6px; }
+.csn-label { font-size: 11px; font-weight: 700; color: #57534e; text-transform: uppercase; letter-spacing: 0.08em; }
+.csn-input { padding: 12px 16px; border: 1.5px solid #e7e5e4; border-radius: 10px; font-size: 14px; font-family: inherit; background: #faf7f2; color: #1c1917; transition: border-color 0.15s; }
+.csn-input:focus { outline: none; border-color: #c8813a; }
+.csn-select { cursor: pointer; }
+.csn-textarea { padding: 12px 16px; border: 1.5px solid #e7e5e4; border-radius: 10px; font-size: 14px; font-family: inherit; background: #faf7f2; color: #1c1917; resize: none; transition: border-color 0.15s; }
+.csn-textarea:focus { outline: none; border-color: #c8813a; }
+.csn-submit { background: linear-gradient(135deg, #c8813a, #d4a060); color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; box-shadow: 0 4px 16px rgba(200,129,58,0.35); }
+.csn-submit:hover:not(.loading) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(200,129,58,0.5); }
+.csn-submit.loading { opacity: 0.7; cursor: wait; }
+
+/* Success state */
+.csn-success { text-align: center; padding: 20px 0; }
+.csn-success-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #16a34a, #22c55e); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff; margin: 0 auto 20px; }
+.csn-success-title { font-size: 24px; font-weight: 900; color: #1c1917; font-family: 'Playfair Display', serif; margin-bottom: 10px; }
+.csn-success-sub { font-size: 14px; color: #57534e; line-height: 1.7; margin-bottom: 20px; }
+.csn-again-btn { background: none; border: 1.5px solid #e7e5e4; color: #57534e; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: border-color 0.2s; }
+.csn-again-btn:hover { border-color: #c8813a; color: #c8813a; }
+
+/* Wholesale CTA */
+.csn-wholesale { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.csn-ws-title { font-size: 14px; font-weight: 800; color: #fdf6ec; margin-bottom: 4px; }
+.csn-ws-sub { font-size: 12px; color: #57534e; }
+.csn-ws-btn { background: none; border: 1.5px solid rgba(212,160,96,0.4); color: #d4a060; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: all 0.2s; display: inline-block; }
+.csn-ws-btn:hover { background: rgba(212,160,96,0.1); border-color: #d4a060; }
 
 /* ── FEATURE STRIP ──────────────────────────────── */
 .feature-strip { padding: 72px 0; background: #faf7f2; }
