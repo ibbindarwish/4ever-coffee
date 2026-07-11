@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useCartStore } from '../stores/cart'
 import { useLoyaltyStore } from '../stores/loyalty'
@@ -12,9 +12,26 @@ const customerAuth = useCustomerAuthStore()
 const route = useRoute()
 
 const menuOpen = ref(false)
+const scrolled = ref(false)
+const showTop  = ref(false)
+const cookieDone = ref(true)
 
 function closeMenu() { menuOpen.value = false }
 function logout() { customerAuth.logout(); closeMenu() }
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }) }
+function acceptCookies() { localStorage.setItem('4ever-cookie', '1'); cookieDone.value = true }
+function declineCookies() { cookieDone.value = true }
+
+function onScroll() {
+  scrolled.value = window.scrollY > 72
+  showTop.value  = window.scrollY > 500
+}
+
+onMounted(() => {
+  cookieDone.value = !!localStorage.getItem('4ever-cookie')
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <template>
@@ -29,7 +46,7 @@ function logout() { customerAuth.logout(); closeMenu() }
       </div>
     </div>
 
-    <header class="shop-header">
+    <header class="shop-header" :class="{ scrolled }">
       <div class="header-inner">
         <RouterLink to="/shop" class="brand" @click="closeMenu">
           <AppLogo :size="34" :dark="true" />
@@ -143,6 +160,33 @@ function logout() { customerAuth.logout(); closeMenu() }
     <main class="shop-main">
       <RouterView />
     </main>
+
+    <!-- ── Scroll-to-top ── -->
+    <Transition name="top-btn">
+      <button v-if="showTop" class="scroll-top-btn" @click="scrollToTop" aria-label="Back to top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M18 15l-6-6-6 6"/>
+        </svg>
+      </button>
+    </Transition>
+
+    <!-- ── Cookie Banner ── -->
+    <Transition name="cookie">
+      <div v-if="!cookieDone" class="cookie-banner">
+        <div class="cookie-inner">
+          <div class="cookie-text">
+            <span class="cookie-icon">🍪</span>
+            <div>
+              <strong>We use cookies</strong> to personalise your experience, remember your preferences, and serve you better coffee recommendations. No data is sold to third parties.
+            </div>
+          </div>
+          <div class="cookie-actions">
+            <button class="cookie-decline" @click="declineCookies">Decline</button>
+            <button class="cookie-accept" @click="acceptCookies">Accept All</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <footer class="shop-footer">
       <!-- Certifications strip -->
@@ -280,8 +324,10 @@ function logout() { customerAuth.logout(); closeMenu() }
   100% { transform: translateX(-33.333%); }
 }
 
-.shop-header { background: #fff; border-bottom: 1px solid #f0ebe4; position: sticky; top: 34px; z-index: 100; box-shadow: 0 1px 6px rgba(44,16,8,0.06); }
-.header-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 68px; display: flex; align-items: center; gap: 28px; }
+.shop-header { background: #fff; border-bottom: 1px solid #f0ebe4; position: sticky; top: 34px; z-index: 100; box-shadow: 0 1px 6px rgba(44,16,8,0.06); transition: all 0.25s ease; }
+.shop-header.scrolled { top: 0; box-shadow: 0 4px 24px rgba(44,16,8,0.12); backdrop-filter: blur(12px); background: rgba(255,255,255,0.94); }
+.shop-header.scrolled .header-inner { height: 56px; }
+.header-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 68px; display: flex; align-items: center; gap: 28px; transition: height 0.25s ease; }
 
 .brand { display: flex; align-items: center; gap: 6px; text-decoration: none; flex-shrink: 0; }
 .brand-tagline { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #a8a29e; margin-top: 2px; }
@@ -463,4 +509,38 @@ function logout() { customerAuth.logout(); closeMenu() }
   .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
   .footer-bottom-links { justify-content: center; }
 }
+
+/* ── Scroll-to-top button ── */
+.scroll-top-btn {
+  position: fixed; bottom: 32px; right: 28px; z-index: 900;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, #c8813a, #d4a060);
+  border: none; cursor: pointer; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 24px rgba(200,129,58,0.45);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.scroll-top-btn:hover { transform: translateY(-3px) scale(1.08); box-shadow: 0 10px 32px rgba(200,129,58,0.6); }
+.scroll-top-btn svg { width: 20px; height: 20px; }
+.top-btn-enter-active, .top-btn-leave-active { transition: opacity 0.25s, transform 0.25s; }
+.top-btn-enter-from, .top-btn-leave-to { opacity: 0; transform: translateY(16px) scale(0.8); }
+
+/* ── Cookie banner ── */
+.cookie-banner {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 950;
+  background: rgba(20,10,4,0.97); backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(212,160,96,0.2);
+  padding: 20px 24px;
+}
+.cookie-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: space-between; }
+.cookie-text { display: flex; align-items: flex-start; gap: 14px; font-size: 13px; color: #a8a29e; line-height: 1.6; flex: 1; min-width: 240px; }
+.cookie-icon { font-size: 22px; flex-shrink: 0; }
+.cookie-text strong { color: #fdf6ec; }
+.cookie-actions { display: flex; gap: 10px; flex-shrink: 0; }
+.cookie-decline { background: none; border: 1.5px solid rgba(255,255,255,0.12); color: #78716c; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.cookie-decline:hover { border-color: rgba(255,255,255,0.25); color: #a8a29e; }
+.cookie-accept { background: linear-gradient(135deg, #c8813a, #d4a060); color: #fff; border: none; border-radius: 8px; padding: 9px 20px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; box-shadow: 0 4px 14px rgba(200,129,58,0.4); }
+.cookie-accept:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,129,58,0.55); }
+.cookie-enter-active, .cookie-leave-active { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s; }
+.cookie-enter-from, .cookie-leave-to { transform: translateY(100%); opacity: 0; }
 </style>

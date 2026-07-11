@@ -164,6 +164,8 @@ onMounted(() => {
   els.forEach(el => obs.observe(el))
   // Clock
   clockInterval = setInterval(updateClock, 1000)
+  // Testimonial carousel
+  startReviewCycle()
 })
 
 import { onUnmounted } from 'vue'
@@ -174,8 +176,34 @@ const roasteryStore = useRoasteryStore()
 // ── COFFEE CLOCK ─────────────────────────────────────────────────────────────
 const now = ref(new Date())
 let clockInterval: ReturnType<typeof setInterval>
-onUnmounted(() => clearInterval(clockInterval))
+onUnmounted(() => { clearInterval(clockInterval); clearInterval(reviewInterval) })
 function updateClock() { now.value = new Date() }
+
+// ── TESTIMONIAL CAROUSEL ─────────────────────────────────────────────────────
+const REVIEWS = [
+  { stars: 5, text: 'The Panama Geisha pour-over changed my relationship with coffee. I didn\'t know a cup could taste like jasmine and honey. 4ever Coffee is genuinely world-class.', author: 'Sarah M.', meta: 'Loyalty Gold Member · London', initial: 'S', bg: 'linear-gradient(135deg,#d4a060,#c8813a)', featured: false },
+  { stars: 5, text: 'I\'ve tried every specialty coffee shop in London and 4ever Coffee is the one I keep coming back to. The baristas know their craft, the atmosphere is perfect, and the loyalty scheme actually rewards you.', author: 'Ahmad Al-Rashid', meta: 'Regular Customer · Kensington', initial: 'A', bg: 'linear-gradient(135deg,#1a0a04,#c8813a)', featured: true },
+  { stars: 5, text: 'Ordered delivery at 8 AM and it arrived within 18 minutes — still piping hot. The Ethiopian Yirgacheffe was absolutely stunning. Free delivery over £30 makes this a no-brainer.', author: 'James T.', meta: 'Verified Delivery Order · Chelsea', initial: 'J', bg: 'linear-gradient(135deg,#22c55e,#16a34a)', featured: false },
+  { stars: 5, text: 'The Victoria Sponge is incredible — light, perfectly balanced, not too sweet. Paired with a flat white it\'s the best afternoon break I\'ve had. The sweets menu deserves its own award.', author: 'Priya K.', meta: 'Gold Member · Notting Hill', initial: 'P', bg: 'linear-gradient(135deg,#f59e0b,#d97706)', featured: false },
+  { stars: 5, text: 'Booked a table for 6 through the app and it was effortless. The Roastery corner is a beautiful space — exposed brick, the smell of fresh roasting, and the quietest morning I\'ve had.', author: 'Maria C.', meta: 'Table Booking · Shoreditch', initial: 'M', bg: 'linear-gradient(135deg,#6366f1,#4f46e5)', featured: false },
+  { stars: 4, text: 'Reached Gold tier in 6 weeks just from my morning flat white. The free drink reward came through instantly on the app. Best loyalty scheme I\'ve seen from any café, period.', author: 'David W.', meta: 'Gold Member · Canary Wharf', initial: 'D', bg: 'linear-gradient(135deg,#3b82f6,#2563eb)', featured: false },
+]
+const reviewIdx    = ref(0)
+const reviewPct    = ref(0)
+let reviewInterval: ReturnType<typeof setInterval>
+
+function startReviewCycle() {
+  clearInterval(reviewInterval)
+  reviewPct.value = 0
+  reviewInterval = setInterval(() => {
+    reviewPct.value += 100 / 50 // 5s / 100ms steps
+    if (reviewPct.value >= 100) {
+      reviewPct.value = 0
+      reviewIdx.value = (reviewIdx.value + 1) % REVIEWS.length
+    }
+  }, 100)
+}
+function goReview(i: number) { reviewIdx.value = i; reviewPct.value = 0; startReviewCycle() }
 
 // ── CONTACT FORM ──────────────────────────────────────────────────────────────
 const contactForm = ref({ name: '', email: '', subject: 'General Enquiry', message: '' })
@@ -361,7 +389,7 @@ const weatherRec = computed(() => {
       </div>
     </section>
 
-    <!-- ── TESTIMONIALS ─────────────────────────────────────── -->
+    <!-- ── TESTIMONIALS CAROUSEL ───────────────────────────── -->
     <section class="testimonials-section reveal">
       <div class="section-inner">
         <div class="section-head center">
@@ -369,57 +397,53 @@ const weatherRec = computed(() => {
           <h2 class="section-title">Loved by Coffee Lovers</h2>
           <p class="section-sub">Real reviews from real customers — no editing, no embellishment.</p>
         </div>
-        <div class="reviews-grid">
-          <div class="review-card">
-            <div class="review-stars">★★★★★</div>
-            <p class="review-text">"The Panama Geisha pour-over changed my relationship with coffee. I didn't know a cup could taste like jasmine and honey. 4ever Coffee is genuinely world-class."</p>
-            <div class="reviewer">
-              <div class="reviewer-avatar" style="background: linear-gradient(135deg, #d4a060, #c8813a);">S</div>
-              <div><div class="reviewer-name">Sarah M.</div><div class="reviewer-meta">Loyalty Gold Member · London</div></div>
-            </div>
+
+        <!-- Big featured carousel card -->
+        <div class="carousel-wrap">
+          <button class="carousel-arrow carousel-prev" @click="goReview((reviewIdx - 1 + REVIEWS.length) % REVIEWS.length)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+
+          <div class="carousel-stage">
+            <Transition name="review-slide" mode="out-in">
+              <div :key="reviewIdx" class="carousel-card" :class="{ featured: REVIEWS[reviewIdx].featured }">
+                <div v-if="REVIEWS[reviewIdx].featured" class="carousel-badge">⭐ Editor's Pick</div>
+                <div class="carousel-stars">
+                  <span v-for="s in 5" :key="s" :class="s <= REVIEWS[reviewIdx].stars ? 'star-on' : 'star-off'">★</span>
+                </div>
+                <p class="carousel-text">"{{ REVIEWS[reviewIdx].text }}"</p>
+                <div class="carousel-reviewer">
+                  <div class="carousel-avatar" :style="{ background: REVIEWS[reviewIdx].bg }">
+                    {{ REVIEWS[reviewIdx].initial }}
+                  </div>
+                  <div>
+                    <div class="carousel-name">{{ REVIEWS[reviewIdx].author }}</div>
+                    <div class="carousel-meta">{{ REVIEWS[reviewIdx].meta }}</div>
+                  </div>
+                </div>
+                <!-- Progress bar -->
+                <div class="carousel-progress-wrap">
+                  <div class="carousel-progress-bar" :style="{ width: reviewPct + '%' }"></div>
+                </div>
+              </div>
+            </Transition>
           </div>
-          <div class="review-card featured">
-            <div class="review-badge">⭐ Editor's Pick</div>
-            <div class="review-stars gold">★★★★★</div>
-            <p class="review-text">"I've tried every specialty coffee shop in London and 4ever Coffee is the one I keep coming back to. The baristas know their craft, the atmosphere is perfect, and the loyalty scheme actually rewards you."</p>
-            <div class="reviewer">
-              <div class="reviewer-avatar" style="background: linear-gradient(135deg, #1a0a04, #c8813a);">A</div>
-              <div><div class="reviewer-name">Ahmad Al-Rashid</div><div class="reviewer-meta">Regular Customer · Kensington</div></div>
-            </div>
-          </div>
-          <div class="review-card">
-            <div class="review-stars">★★★★★</div>
-            <p class="review-text">"Ordered delivery at 8 AM and it arrived within 18 minutes — still piping hot. The Ethiopian Yirgacheffe was absolutely stunning. Free delivery over £30 makes this a no-brainer."</p>
-            <div class="reviewer">
-              <div class="reviewer-avatar" style="background: linear-gradient(135deg, #22c55e, #16a34a);">J</div>
-              <div><div class="reviewer-name">James T.</div><div class="reviewer-meta">Verified Delivery Order · Chelsea</div></div>
-            </div>
-          </div>
-          <div class="review-card">
-            <div class="review-stars">★★★★★</div>
-            <p class="review-text">"The Victoria Sponge is incredible — light, perfectly balanced, not too sweet. Paired with a flat white it's the best afternoon break I've had. The sweets menu deserves its own award."</p>
-            <div class="reviewer">
-              <div class="reviewer-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">P</div>
-              <div><div class="reviewer-name">Priya K.</div><div class="reviewer-meta">Gold Member · Notting Hill</div></div>
-            </div>
-          </div>
-          <div class="review-card">
-            <div class="review-stars">★★★★★</div>
-            <p class="review-text">"Booked a table for 6 through the app and it was effortless. The Roastery corner is a beautiful space — exposed brick, the smell of fresh roasting, and the quietest morning I've had in London."</p>
-            <div class="reviewer">
-              <div class="reviewer-avatar" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">M</div>
-              <div><div class="reviewer-name">Maria C.</div><div class="reviewer-meta">Table Booking · Shoreditch</div></div>
-            </div>
-          </div>
-          <div class="review-card">
-            <div class="review-stars">★★★★☆</div>
-            <p class="review-text">"Reached Gold tier in 6 weeks just from my morning flat white. The free drink reward came through instantly on the app. Best loyalty scheme I've seen from any café, period."</p>
-            <div class="reviewer">
-              <div class="reviewer-avatar" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">D</div>
-              <div><div class="reviewer-name">David W.</div><div class="reviewer-meta">Gold Member · Canary Wharf</div></div>
-            </div>
-          </div>
+
+          <button class="carousel-arrow carousel-next" @click="goReview((reviewIdx + 1) % REVIEWS.length)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
         </div>
+
+        <!-- Dot navigation -->
+        <div class="carousel-dots">
+          <button v-for="(_, i) in REVIEWS" :key="i"
+                  class="carousel-dot"
+                  :class="{ active: i === reviewIdx }"
+                  @click="goReview(i)">
+          </button>
+        </div>
+
+        <!-- Review summary strip -->
         <div class="reviews-summary">
           <div class="rs-score">4.9</div>
           <div class="rs-info">
@@ -1469,41 +1493,47 @@ const weatherRec = computed(() => {
   position: relative; overflow: hidden;
   padding: 80px 24px 60px;
 }
+/* ── Hero animations ── */
+@keyframes heroFadeUp  { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes heroFadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes orbDrift    { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-20px) scale(1.06); } 66% { transform: translate(-20px,15px) scale(0.96); } }
+@keyframes cupFloat    { 0%,100% { transform: translateY(var(--ty,0px)); } 50% { transform: translateY(calc(var(--ty,0px) - 12px)); } }
+@keyframes heroReveal  { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0% 0 0); } }
+
 .hero-bg { position: absolute; inset: 0; pointer-events: none; }
 .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.18; }
-.orb-1 { width: 500px; height: 500px; background: #c8813a; top: -100px; left: -100px; }
-.orb-2 { width: 350px; height: 350px; background: #d4a060; bottom: -80px; right: 200px; }
-.orb-3 { width: 280px; height: 280px; background: #8B4513; top: 50%; left: 45%; }
+.orb-1 { width: 500px; height: 500px; background: #c8813a; top: -100px; left: -100px; animation: orbDrift 14s ease-in-out infinite; }
+.orb-2 { width: 350px; height: 350px; background: #d4a060; bottom: -80px; right: 200px; animation: orbDrift 18s ease-in-out infinite reverse; }
+.orb-3 { width: 280px; height: 280px; background: #8B4513; top: 50%; left: 45%; animation: orbDrift 22s ease-in-out infinite; }
 
 .hero-content { position: relative; z-index: 2; max-width: 560px; }
-.hero-logo-wrap { margin-bottom: 24px; }
-.hero-eyebrow { font-size: 13px; font-weight: 600; color: #d4a060; letter-spacing: 0.12em; margin: 0 0 16px; text-transform: uppercase; }
-.hero-heading { margin: 0 0 22px; line-height: 1; }
+.hero-logo-wrap { margin-bottom: 24px; animation: heroFadeIn 0.8s ease both; }
+.hero-eyebrow  { font-size: 13px; font-weight: 600; color: #d4a060; letter-spacing: 0.12em; margin: 0 0 16px; text-transform: uppercase; animation: heroFadeUp 0.7s 0.15s ease both; }
+.hero-heading  { margin: 0 0 22px; line-height: 1; animation: heroFadeUp 0.7s 0.28s ease both; }
 .line-1 { display: block; font-size: clamp(64px, 10vw, 112px); font-weight: 900; color: #fdf6ec; letter-spacing: -4px; }
 .line-1 em { font-style: normal; color: #d4a060; }
 .line-2 { display: block; font-size: clamp(36px, 6vw, 64px); font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: -2px; }
-.hero-tagline { font-size: 17px; color: #a8a29e; line-height: 1.65; margin: 0 0 34px; }
-.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 48px; }
+.hero-tagline  { font-size: 17px; color: #a8a29e; line-height: 1.65; margin: 0 0 34px; animation: heroFadeUp 0.7s 0.42s ease both; }
+.hero-actions  { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 48px; animation: heroFadeUp 0.7s 0.56s ease both; }
+.hero-stats    { display: flex; align-items: center; gap: 20px; animation: heroFadeUp 0.7s 0.70s ease both; }
 .btn-primary { background: linear-gradient(135deg, #c8813a, #d4a060); color: #fff; border-radius: 12px; padding: 14px 30px; font-size: 15px; font-weight: 700; text-decoration: none; box-shadow: 0 8px 28px rgba(200,129,58,0.45); transition: all 0.2s; display: inline-block; }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(200,129,58,0.6); }
 .btn-ghost { border: 1.5px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.75); border-radius: 12px; padding: 14px 28px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.2s; display: inline-block; background: rgba(255,255,255,0.05); }
 .btn-ghost:hover { border-color: rgba(255,255,255,0.5); color: #fff; background: rgba(255,255,255,0.1); }
-.hero-stats { display: flex; align-items: center; gap: 20px; }
 .hstat { display: flex; flex-direction: column; gap: 2px; }
 .hstat-val { font-size: 22px; font-weight: 800; color: #fdf6ec; }
 .hstat-label { font-size: 11px; color: #78716c; text-transform: uppercase; letter-spacing: 0.06em; }
 .hstat-div { width: 1px; height: 36px; background: rgba(255,255,255,0.12); }
 
-.hero-cups { position: absolute; right: 5%; top: 50%; transform: translateY(-50%); display: flex; gap: 20px; align-items: flex-end; z-index: 1; pointer-events: none; }
+.hero-cups { position: absolute; right: 5%; top: 50%; transform: translateY(-50%); display: flex; gap: 20px; align-items: flex-end; z-index: 1; pointer-events: none; animation: heroFadeIn 1s 0.5s ease both; }
 @media (max-width: 960px) { .hero-cups { display: none; } }
 .float-cup { border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 0; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; }
 .float-cup-bg { position: absolute; inset: 0; }
 .float-cup-photo { width: 100%; height: 120px; object-fit: cover; position: relative; z-index: 1; }
-.cup-label { position: relative; z-index: 2; padding: 10px 14px; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); width: 100%; }
-.cup-0 { width: 130px; transform: translateY(0px); }
-.cup-1 { width: 120px; transform: translateY(-30px); }
-.cup-2 { width: 110px; transform: translateY(20px); }
-.cup-label { text-align: center; }
+.cup-label { position: relative; z-index: 2; padding: 10px 14px; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); width: 100%; text-align: center; }
+.cup-0 { width: 130px; --ty: 0px;   animation: cupFloat 5s ease-in-out infinite; }
+.cup-1 { width: 120px; --ty: -30px; animation: cupFloat 6.5s ease-in-out infinite 0.8s; }
+.cup-2 { width: 110px; --ty: 20px;  animation: cupFloat 4.5s ease-in-out infinite 1.6s; }
 .cup-name  { display: block; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9); }
 .cup-price { display: block; font-size: 12px; font-weight: 600; color: #d4a060; }
 
@@ -2175,35 +2205,59 @@ const weatherRec = computed(() => {
 
 /* ── TESTIMONIALS ───────────────────────────────── */
 .testimonials-section { padding: 88px 0; background: #faf7f2; }
-.reviews-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 48px;
-}
-@media (max-width: 1050px) { .reviews-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 620px)  { .reviews-grid { grid-template-columns: 1fr; } }
 
-.review-card {
-  background: #fff; border: 1px solid #f0ebe4; border-radius: 20px;
-  padding: 28px 24px; display: flex; flex-direction: column; gap: 16px;
-  box-shadow: 0 2px 8px rgba(44,16,8,0.05); transition: all 0.25s; position: relative;
+/* ── Carousel ── */
+.carousel-wrap { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+.carousel-arrow {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  background: #fff; border: 1.5px solid #f0ebe4; color: #57534e;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: all 0.2s;
 }
-.review-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(44,16,8,0.1); }
-.review-card.featured { border-color: #d4a060; background: #fffbf5; box-shadow: 0 4px 20px rgba(212,160,96,0.15); }
-.review-badge { position: absolute; top: -12px; left: 20px; background: linear-gradient(135deg,#c8813a,#d4a060); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
-.review-stars { font-size: 15px; color: #e7e5e4; letter-spacing: 2px; }
-.review-stars.gold { color: #d4a060; }
-.review-card.featured .review-stars { color: #d4a060; }
-.review-text { font-size: 14px; color: #57534e; line-height: 1.75; margin: 0; flex: 1; font-style: italic; }
-.reviewer { display: flex; align-items: center; gap: 12px; margin-top: auto; }
-.reviewer-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #fff; flex-shrink: 0; }
-.reviewer-name { font-size: 13px; font-weight: 700; color: #1c1917; }
-.reviewer-meta { font-size: 11px; color: #a8a29e; }
+.carousel-arrow:hover { background: #1c1917; border-color: #1c1917; color: #fff; transform: scale(1.08); }
+.carousel-arrow svg { width: 18px; height: 18px; }
+.carousel-stage { flex: 1; overflow: hidden; }
 
+.carousel-card {
+  background: #fff; border: 1.5px solid #f0ebe4; border-radius: 24px;
+  padding: 36px 40px; position: relative; overflow: hidden;
+  box-shadow: 0 4px 28px rgba(44,16,8,0.07);
+}
+.carousel-card.featured { border-color: #d4a060; background: #fffbf5; box-shadow: 0 8px 36px rgba(212,160,96,0.18); }
+.carousel-badge { position: absolute; top: 20px; right: 24px; background: linear-gradient(135deg,#c8813a,#d4a060); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 14px; border-radius: 20px; }
+.carousel-stars { font-size: 20px; letter-spacing: 3px; margin-bottom: 20px; }
+.star-on  { color: #d4a060; }
+.star-off { color: #e7e5e4; }
+.carousel-text {
+  font-size: clamp(15px, 2.2vw, 18px); color: #1c1917; line-height: 1.75;
+  font-style: italic; font-family: 'Playfair Display', serif;
+  margin: 0 0 28px; min-height: 88px;
+}
+.carousel-reviewer { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.carousel-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.carousel-name { font-size: 14px; font-weight: 800; color: #1c1917; }
+.carousel-meta { font-size: 12px; color: #a8a29e; }
+.carousel-progress-wrap { height: 3px; background: #f0ebe4; border-radius: 3px; overflow: hidden; }
+.carousel-progress-bar { height: 100%; background: linear-gradient(90deg, #c8813a, #d4a060); border-radius: 3px; transition: width 0.1s linear; }
+
+/* Slide transition */
+.review-slide-enter-active { transition: opacity 0.35s ease, transform 0.35s ease; }
+.review-slide-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; position: absolute; width: 100%; }
+.review-slide-enter-from  { opacity: 0; transform: translateX(40px); }
+.review-slide-leave-to    { opacity: 0; transform: translateX(-30px); }
+
+/* Dots */
+.carousel-dots { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 40px; }
+.carousel-dot { width: 8px; height: 8px; border-radius: 50%; background: #e7e5e4; border: none; cursor: pointer; transition: all 0.2s; padding: 0; }
+.carousel-dot.active { width: 24px; border-radius: 4px; background: #c8813a; }
+
+/* Summary strip */
 .reviews-summary {
   display: flex; align-items: center; justify-content: center; gap: 20px;
   background: #1a0a04; border-radius: 16px; padding: 28px 32px;
   max-width: 400px; margin: 0 auto;
 }
-.rs-score { font-size: 52px; font-weight: 900; color: #d4a060; line-height: 1; }
+.rs-score { font-size: 52px; font-weight: 900; color: #d4a060; line-height: 1; font-family: 'Playfair Display', serif; }
 .rs-stars  { font-size: 20px; color: #d4a060; letter-spacing: 3px; }
 .rs-count  { font-size: 13px; color: #a8a29e; margin: 4px 0; }
 .rs-platforms { font-size: 11px; color: #6b6360; }
