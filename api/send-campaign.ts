@@ -15,30 +15,57 @@ export default async function handler(req: any, res: any) {
 
   if (!recipients?.length) return res.status(400).json({ error: 'No recipients' })
 
-  // Check key before instantiating — constructor throws if key is undefined
   if (!process.env.RESEND_API_KEY) {
-    console.warn('[send-campaign] RESEND_API_KEY not set — skipping send')
-    return res.status(200).json({ ok: true, sent: recipients.length, note: 'Email service not configured — add RESEND_API_KEY to Vercel environment variables' })
+    return res.status(200).json({
+      ok: true,
+      sent: 0,
+      note: 'Add RESEND_API_KEY to Vercel environment variables to enable real email delivery.',
+    })
   }
 
-  const resend = new Resend(process.env.RESEND_API_KEY)
-  const FROM   = process.env.FROM_EMAIL ?? 'onboarding@resend.dev'
-
   try {
-    const batch = recipients.map(r => ({
-      from:    FROM,
-      to:      [r.email],
-      subject,
-      html:    buildCampaignEmail(type, r.name, promoCode),
-    }))
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const FROM   = process.env.FROM_EMAIL ?? 'onboarding@resend.dev'
 
-    const { error } = await resend.batch.send(batch)
-    if (error) return res.status(400).json({ error: error.message })
+    // Send individually so one failure never blocks the rest
+    const results = await Promise.allSettled(
+      recipients.map(r =>
+        resend.emails.send({
+          from:    FROM,
+          to:      [r.email],
+          subject,
+          html:    buildCampaignEmail(type, r.name, promoCode),
+        })
+      )
+    )
 
-    return res.status(200).json({ ok: true, sent: batch.length })
+    let sent = 0
+    const errors: string[] = []
+
+    results.forEach((result, i) => {
+      if (result.status === 'rejected') {
+        errors.push(`${recipients[i].email}: ${result.reason?.message ?? 'send failed'}`)
+      } else if (result.value?.error) {
+        errors.push(`${recipients[i].email}: ${result.value.error.message}`)
+      } else {
+        sent++
+      }
+    })
+
+    if (sent === 0 && errors.length > 0) {
+      // All failed — surface the first error clearly
+      const firstError = errors[0]
+      const hint = FROM === 'onboarding@resend.dev'
+        ? ' Tip: with a free Resend account you can only send to your own email address until you verify a domain. Add FROM_EMAIL to Vercel env vars and set it to your verified sender.'
+        : ''
+      return res.status(400).json({ error: firstError + hint })
+    }
+
+    return res.status(200).json({ ok: true, sent, failed: errors.length })
   } catch (err: any) {
-    console.error('[send-campaign] error:', err)
-    return res.status(500).json({ error: err?.message ?? 'Send failed' })
+    const msg = err?.message ?? String(err) ?? 'Unknown error'
+    console.error('[send-campaign] crash:', msg)
+    return res.status(500).json({ error: 'Email service error: ' + msg })
   }
 }
 
