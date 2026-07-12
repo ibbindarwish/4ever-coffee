@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import PwaInstallBanner from './components/PwaInstallBanner.vue'
 
 const route = useRoute()
 const loading = ref(false)
 const loadPct = ref(0)
 let loadTimer: ReturnType<typeof setTimeout>
+
+onMounted(() => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  }
+})
 
 watch(() => route.path, () => {
   loading.value = true
@@ -29,6 +36,7 @@ watch(() => route.path, () => {
         <component :is="Component" :key="r.path" />
       </Transition>
     </RouterView>
+    <PwaInstallBanner />
   </div>
 </template>
 

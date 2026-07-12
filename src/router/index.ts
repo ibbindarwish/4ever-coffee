@@ -59,6 +59,7 @@ const router = createRouter({
         { path: 'gift',             name: 'gift',               component: () => import('../pages/shop/GiftExperiencePage.vue') },
         { path: 'waiting-room',     name: 'waiting-room',       component: () => import('../pages/shop/WaitingRoomPage.vue') },
         { path: 'decaf-confessions',name: 'decaf-confessions',  component: () => import('../pages/shop/DecafConfessionsPage.vue') },
+        { path: 'refer',            name: 'refer',              component: () => import('../pages/shop/ReferralPage.vue'), meta: { public: true } },
       ],
     },
     {

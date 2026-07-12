@@ -1,13 +1,47 @@
 {
-  "name": "4ever Coffee",
+  "name": "4ever Coffee Roastery",
   "short_name": "4ever Coffee",
-  "description": "Premium coffee crafted for every moment.",
+  "description": "London's premier specialty coffee roastery — single-origin beans, expert craft, free delivery over £30.",
   "start_url": "/shop",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
   "background_color": "#1a0a04",
   "theme_color": "#d4a060",
+  "lang": "en-GB",
+  "dir": "ltr",
+  "categories": ["food", "shopping", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Order Coffee",
+      "short_name": "Order",
+      "description": "Browse and order specialty coffee",
+      "url": "/shop/menu",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Rewards",
+      "short_name": "Rewards",
+      "description": "Check your loyalty points and rewards",
+      "url": "/shop/loyalty",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Book a Table",
+      "short_name": "Book",
+      "description": "Reserve a table at 4ever Coffee",
+      "url": "/shop/reservation",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Refer a Friend",
+      "short_name": "Refer",
+      "description": "Share 4ever Coffee and earn rewards",
+      "url": "/shop/refer",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -19,6 +53,16 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/og-image.svg",
+      "sizes": "1200x630",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "4ever Coffee Roastery — Home"
     }
   ]
 }

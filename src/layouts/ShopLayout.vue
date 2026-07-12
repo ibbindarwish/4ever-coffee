@@ -5,6 +5,10 @@ import { useCartStore } from '../stores/cart'
 import { useLoyaltyStore } from '../stores/loyalty'
 import { useCustomerAuthStore } from '../stores/customerAuth'
 import AppLogo from '../components/AppLogo.vue'
+import FloatingActions from '../components/FloatingActions.vue'
+import { useMeta } from '../composables/useMeta'
+
+useMeta()
 
 const cart = useCartStore()
 const loyalty = useLoyaltyStore()
@@ -294,6 +298,8 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
         </div>
       </div>
     </footer>
+
+    <FloatingActions />
   </div>
 </template>
 
