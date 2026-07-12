@@ -54,7 +54,26 @@ const composeTags    = ref<EmailTag[]>([])
 const composeSent    = ref(false)
 const composeSending = ref(false)
 const composeError   = ref('')
+const composePartial = ref('')
 const showPreview    = ref(false)
+
+// ── Email service status check ──────────────────────────────
+interface EmailStatus { ok: boolean; configured: boolean; message: string; fromWarning?: string | null }
+const emailStatus        = ref<EmailStatus | null>(null)
+const checkingEmailStatus = ref(false)
+
+async function checkEmailStatus() {
+  checkingEmailStatus.value = true
+  emailStatus.value = null
+  try {
+    const res  = await fetch('/api/email-status')
+    emailStatus.value = await res.json()
+  } catch {
+    emailStatus.value = { ok: false, configured: false, message: 'Could not reach the email service — check your connection and try again.' }
+  } finally {
+    checkingEmailStatus.value = false
+  }
+}
 
 const DEFAULT_SUBJECTS: Record<CampaignType, string> = {
   'customer-review': '⭐ See What Our Coffee Lovers Are Saying About 4ever',
@@ -82,31 +101,66 @@ async function sendCampaign() {
     ? crm.activeSubscribers.filter(s => composeTags.value.some(t => s.tags.includes(t)))
     : crm.activeSubscribers
 
+  if (pool.length === 0) {
+    composeError.value = 'No subscribers match this audience.'
+    return
+  }
+
   composeSending.value = true
   composeError.value   = ''
+  composePartial.value = ''
   showPreview.value = false
-  try {
-    const res  = await fetch('/api/send-campaign', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: composeType.value,
-        subject,
-        recipients: pool.map(s => ({ email: s.email, name: s.name })),
-        promoCode: code,
-      }),
-    })
-    const data = await res.json().catch(() => ({}))
 
-    if (!res.ok || data.error) {
-      composeError.value = data.error || `Email service returned an error (HTTP ${res.status}).`
-    } else if (data.note) {
-      // API responded 200 but didn't actually send (e.g. RESEND_API_KEY not configured)
-      composeError.value = data.note
+  // The API caps each call at 10 sends to stay inside the serverless timeout,
+  // so we chunk the full audience into multiple calls rather than silently
+  // dropping everyone past the first 10.
+  const CHUNK_SIZE = 10
+  const chunks: (typeof pool)[] = []
+  for (let i = 0; i < pool.length; i += CHUNK_SIZE) chunks.push(pool.slice(i, i + CHUNK_SIZE))
+
+  let totalSent = 0
+  let totalFailed = 0
+  let firstError = ''
+
+  try {
+    for (const chunk of chunks) {
+      const res = await fetch('/api/send-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: composeType.value,
+          subject,
+          recipients: chunk.map(s => ({ email: s.email, name: s.name })),
+          promoCode: code,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok || data.error) {
+        firstError = firstError || data.error || `Email service returned an error (HTTP ${res.status}).`
+        totalFailed += chunk.length
+      } else if (data.note && !data.sent) {
+        // API responded 200 but didn't actually send anything (e.g. RESEND_API_KEY not configured)
+        firstError = firstError || data.note
+        totalFailed += chunk.length
+      } else {
+        // data.sent may be a partial count even when a note is also present (e.g. a
+        // direct API call exceeding the per-call cap) — count what actually sent
+        if (data.note) firstError = firstError || data.note
+        totalSent   += data.sent   ?? 0
+        totalFailed += data.failed ?? 0
+      }
+    }
+
+    if (totalSent === 0) {
+      composeError.value = firstError || 'No emails were sent.'
     } else {
       crm.sendCampaign(composeType.value, subject, [...composeTags.value], code)
       composeSent.value = true
-      setTimeout(() => { composeSent.value = false; composeTags.value = [] }, 3500)
+      if (totalFailed > 0) {
+        composePartial.value = `${totalFailed} of ${pool.length} subscribers couldn't be reached${firstError ? ` (${firstError})` : ''}.`
+      }
+      setTimeout(() => { composeSent.value = false; composePartial.value = ''; composeTags.value = [] }, 4500)
     }
   } catch (err: any) {
     composeError.value = 'Could not reach the email service — check your connection and try again.'
@@ -453,6 +507,7 @@ const ALL_TAGS: EmailTag[] = ['reviews', 'roastery', 'deals', 'discounts']
           <div>
             <div class="sent-title">Campaign Sent!</div>
             <div class="sent-sub">Your email is on its way to {{ recipientPreview }} subscriber{{ recipientPreview !== 1 ? 's' : '' }}.</div>
+            <div v-if="composePartial" class="sent-warning">⚠ {{ composePartial }}</div>
           </div>
         </div>
         <div v-else class="compose-layout">
@@ -463,6 +518,20 @@ const ALL_TAGS: EmailTag[] = ['reviews', 'roastery', 'deals', 'discounts']
               <div class="error-sub">{{ composeError }}</div>
             </div>
           </div>
+
+          <!-- Email setup check -->
+          <div class="status-check-row">
+            <button class="status-check-btn" :disabled="checkingEmailStatus" @click="checkEmailStatus">
+              {{ checkingEmailStatus ? 'Checking…' : '🔎 Check Email Setup' }}
+            </button>
+            <div v-if="emailStatus" class="status-result" :class="emailStatus.ok ? (emailStatus.fromWarning ? 'warn' : 'ok') : 'bad'">
+              <template v-if="!emailStatus.configured">❌ {{ emailStatus.message }}</template>
+              <template v-else-if="!emailStatus.ok">❌ {{ emailStatus.message }}</template>
+              <template v-else-if="emailStatus.fromWarning">⚠ {{ emailStatus.fromWarning }}</template>
+              <template v-else>✅ {{ emailStatus.message }}</template>
+            </div>
+          </div>
+
           <!-- Type picker -->
           <div class="compose-section">
             <div class="compose-label">Campaign Type</div>
@@ -725,6 +794,19 @@ const ALL_TAGS: EmailTag[] = ['reviews', 'roastery', 'deals', 'discounts']
 .error-icon { width: 40px; height: 40px; border-radius: 50%; background: #dc2626; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .error-title { font-size: 14px; font-weight: 800; color: #dc2626; margin-bottom: 2px; }
 .error-sub { font-size: 12px; color: #57534e; line-height: 1.5; }
+.sent-warning { font-size: 12px; color: #b45309; margin-top: 6px; font-weight: 600; }
+
+.status-check-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.status-check-btn {
+  padding: 9px 16px; border-radius: 10px; border: 1.5px solid #e7e5e4; background: #fff;
+  color: #44403c; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: inherit;
+}
+.status-check-btn:hover:not(:disabled) { border-color: #d4a060; color: #c8813a; }
+.status-check-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.status-result { font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 8px; line-height: 1.5; }
+.status-result.ok   { color: #059669; background: rgba(5,150,105,0.08); }
+.status-result.warn { color: #b45309; background: rgba(180,83,9,0.08); }
+.status-result.bad  { color: #dc2626; background: rgba(220,38,38,0.08); }
 
 /* Campaigns */
 .campaigns-table-wrap { overflow-x: auto; }

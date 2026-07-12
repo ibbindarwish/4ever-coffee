@@ -37,8 +37,13 @@ export default async function handler(req: any, res: any) {
 
     const from = process.env.FROM_EMAIL ?? 'onboarding@resend.dev'
 
-    // Send up to 10 in parallel (Vercel functions timeout at 10 s)
-    const batch = recipients.slice(0, 10)
+    // Send up to 10 in parallel (Vercel functions timeout at 10 s). The CRM UI
+    // chunks larger audiences into multiple calls of 10, but a direct API
+    // caller could still send more — report what got skipped rather than
+    // silently dropping it.
+    const MAX_PER_CALL = 10
+    const batch   = recipients.slice(0, MAX_PER_CALL)
+    const skipped = recipients.length - batch.length
     const results = await Promise.allSettled(
       batch.map(r =>
         fetch(RESEND_API, {
@@ -52,7 +57,7 @@ export default async function handler(req: any, res: any) {
           }),
         })
           .then(async httpRes => {
-            const json = await httpRes.json().catch(() => ({}))
+            const json: any = await httpRes.json().catch(() => ({}))
             if (!httpRes.ok) throw new Error(json?.message ?? json?.name ?? `HTTP ${httpRes.status}`)
             return json
           })
@@ -74,7 +79,10 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: errors[0] + hint })
     }
 
-    return res.status(200).json({ ok: true, sent, failed: errors.length })
+    return res.status(200).json({
+      ok: true, sent, failed: errors.length,
+      ...(skipped > 0 ? { skipped, note: `${skipped} recipient(s) skipped — this endpoint only sends up to ${MAX_PER_CALL} per call.` } : {}),
+    })
 
   } catch (err: any) {
     const msg = err instanceof Error ? err.message : String(err ?? 'unknown')
