@@ -4,7 +4,88 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- PWA / iOS Home Screen -->
+    <!-- ── Primary SEO ─────────────────────────────────────────────── -->
+    <title>4ever Coffee — London's Premier Specialty Roastery &amp; Café</title>
+    <meta name="description" content="4ever Coffee is London's award-winning specialty roastery. Single-origin beans from Ethiopia, Colombia, Yemen and beyond — expert craft, free delivery over £30. Order online now." />
+    <meta name="keywords" content="specialty coffee London, coffee roastery London, single origin coffee, Ethiopian coffee, Colombian coffee, best coffee London, coffee delivery London, 4ever coffee, 4ever roastery, specialty café London, artisan coffee" />
+    <meta name="author" content="4ever Coffee" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://4ever-roastery.vercel.app/shop" />
+
+    <!-- ── Open Graph (Facebook, Instagram, WhatsApp, LinkedIn) ───── -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:site_name"   content="4ever Coffee" />
+    <meta property="og:title"       content="4ever Coffee — London's Premier Specialty Roastery" />
+    <meta property="og:description" content="Award-winning specialty coffee roastery in London. Single-origin beans, expert baristas, free delivery over £30. Discover the 4ever difference." />
+    <meta property="og:url"         content="https://4ever-roastery.vercel.app/shop" />
+    <meta property="og:image"       content="https://4ever-roastery.vercel.app/og-image.svg" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt"   content="4ever Coffee — London's Premier Specialty Roastery" />
+    <meta property="og:locale"      content="en_GB" />
+
+    <!-- ── Twitter / X Card ───────────────────────────────────────── -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:site"        content="@4evercoffee" />
+    <meta name="twitter:creator"     content="@4evercoffee" />
+    <meta name="twitter:title"       content="4ever Coffee — London's Premier Specialty Roastery" />
+    <meta name="twitter:description" content="Award-winning specialty coffee roastery in London. Single-origin beans, expert baristas, free delivery over £30." />
+    <meta name="twitter:image"       content="https://4ever-roastery.vercel.app/og-image.svg" />
+    <meta name="twitter:image:alt"   content="4ever Coffee Roastery" />
+
+    <!-- ── WhatsApp / Telegram ────────────────────────────────────── -->
+    <meta property="og:image:type"  content="image/svg+xml" />
+
+    <!-- ── Schema.org — CafeOrCoffeeShop ─────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CafeOrCoffeeShop",
+      "name": "4ever Coffee",
+      "alternateName": "4ever Roastery",
+      "description": "London's award-winning specialty coffee roastery. Single-origin beans, expert craft, and free delivery over £30.",
+      "url": "https://4ever-roastery.vercel.app/shop",
+      "image": "https://4ever-roastery.vercel.app/og-image.svg",
+      "logo": "https://4ever-roastery.vercel.app/favicon.svg",
+      "priceRange": "££",
+      "servesCuisine": ["Specialty Coffee", "Cakes", "Pastries"],
+      "menu": "https://4ever-roastery.vercel.app/shop/menu",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "London",
+        "addressRegion": "England",
+        "addressCountry": "GB"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "51.5074",
+        "longitude": "-0.1278"
+      },
+      "openingHoursSpecification": [
+        { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "07:00", "closes": "22:00" },
+        { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Saturday","Sunday"], "opens": "08:00", "closes": "22:00" }
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Coffee & Food Menu",
+        "url": "https://4ever-roastery.vercel.app/shop/menu"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "2134",
+        "bestRating": "5"
+      },
+      "sameAs": [
+        "https://www.instagram.com/4evercoffee",
+        "https://www.facebook.com/4evercoffee",
+        "https://twitter.com/4evercoffee",
+        "https://www.tiktok.com/@4evercoffee"
+      ]
+    }
+    </script>
+
+    <!-- ── PWA / iOS Home Screen ───────────────────────────────────── -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="4ever Coffee" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -14,10 +95,6 @@
     <meta name="mobile-web-app-capable" content="yes" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>4ever Coffee — London's Premier Specialty Roastery</title>
-    <meta name="description" content="4ever Coffee — award-winning specialty coffee roastery in London. Single-origin beans, expert craft, delivered to your door. Order online or visit us." />
-    <meta property="og:title" content="4ever Coffee — London's Premier Specialty Roastery" />
-    <meta property="og:description" content="Award-winning specialty coffee roastery. Single-origin beans, expert baristas, free delivery over £30." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />

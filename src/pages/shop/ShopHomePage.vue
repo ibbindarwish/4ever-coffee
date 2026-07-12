@@ -175,6 +175,30 @@ import { useCrmStore, type EmailTag } from '../../stores/crm'
 const roasteryStore = useRoasteryStore()
 const crmStore = useCrmStore()
 
+// ── SOCIAL SHARING ───────────────────────────────────────────────────────────
+const SHARE_URL  = 'https://4ever-roastery.vercel.app/shop'
+const SHARE_TEXT = "I just discovered 4ever Coffee — London's best specialty roastery! ☕ Single-origin beans, expert craft, free delivery. Check it out!"
+const linkCopied = ref(false)
+
+async function shareNative() {
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "4ever Coffee — London's Premier Specialty Roastery", text: SHARE_TEXT, url: SHARE_URL })
+    } catch { /* user cancelled */ }
+  } else {
+    copyLink()
+  }
+}
+function shareWhatsApp()  { window.open(`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + ' ' + SHARE_URL)}`, '_blank') }
+function shareFacebook()  { window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`, '_blank') }
+function shareTwitter()   { window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(SHARE_URL)}`, '_blank') }
+function shareTikTok()    { window.open(`https://www.tiktok.com`, '_blank') }
+function copyLink() {
+  navigator.clipboard.writeText(SHARE_URL).catch(() => {})
+  linkCopied.value = true
+  setTimeout(() => { linkCopied.value = false }, 2200)
+}
+
 // ── NEWSLETTER SIGNUP ─────────────────────────────────────────────────────────
 const nlName    = ref('')
 const nlEmail   = ref('')
@@ -1202,6 +1226,92 @@ const weatherRec = computed(() => {
         </div>
       </div>
 
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- SHARE THE LOVE                                                        -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <section class="share-section reveal">
+      <div class="share-inner">
+        <div class="share-head">
+          <div class="share-eyebrow">Spread the Word</div>
+          <h2 class="share-headline">Love 4ever Coffee?<br><em>Tell the world ☕</em></h2>
+          <p class="share-sub">Share with friends and family — help us grow the community of real coffee lovers.</p>
+        </div>
+
+        <!-- Social buttons -->
+        <div class="share-buttons">
+          <button class="share-btn whatsapp" @click="shareWhatsApp">
+            <span class="share-btn-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            </span>
+            WhatsApp
+          </button>
+          <button class="share-btn twitter" @click="shareTwitter">
+            <span class="share-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </span>
+            X / Twitter
+          </button>
+          <button class="share-btn facebook" @click="shareFacebook">
+            <span class="share-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </span>
+            Facebook
+          </button>
+          <button class="share-btn tiktok" @click="shareTikTok">
+            <span class="share-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.78a4.85 4.85 0 01-1.02-.09z"/></svg>
+            </span>
+            TikTok
+          </button>
+          <button class="share-btn native" @click="shareNative">
+            <span class="share-btn-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </span>
+            Share
+          </button>
+        </div>
+
+        <!-- Copy link -->
+        <div class="copy-link-row">
+          <div class="copy-link-box">
+            <span class="copy-link-url">{{ SHARE_URL }}</span>
+            <button class="copy-link-btn" @click="copyLink">
+              <Transition name="fade" mode="out-in">
+                <span v-if="linkCopied" key="copied">✓ Copied!</span>
+                <span v-else key="copy">Copy Link</span>
+              </Transition>
+            </button>
+          </div>
+        </div>
+
+        <!-- Referral banner -->
+        <div class="referral-banner">
+          <div class="referral-left">
+            <div class="referral-icon">🎁</div>
+            <div>
+              <div class="referral-title">Refer a Friend — Both Get 10% Off</div>
+              <div class="referral-sub">Share the link above. Your friend gets 10% on their first order and you earn 10% off your next.</div>
+            </div>
+          </div>
+          <div class="referral-code">
+            <span>Use code</span>
+            <strong>WELCOME10</strong>
+          </div>
+        </div>
+
+        <!-- Proof stats -->
+        <div class="share-stats">
+          <div class="share-stat"><span class="ss-val">2,400+</span><span class="ss-label">subscribers</span></div>
+          <div class="ss-div"></div>
+          <div class="share-stat"><span class="ss-val">4.8★</span><span class="ss-label">average rating</span></div>
+          <div class="ss-div"></div>
+          <div class="share-stat"><span class="ss-val">18 min</span><span class="ss-label">avg delivery</span></div>
+          <div class="ss-div"></div>
+          <div class="share-stat"><span class="ss-val">12+</span><span class="ss-label">countries sourced</span></div>
+        </div>
+      </div>
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════════════ -->
@@ -2303,6 +2413,51 @@ const weatherRec = computed(() => {
 }
 .dperk { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #78716c; }
 .dperk-icon { font-size: 18px; }
+
+/* ── SHARE THE LOVE ─────────────────────────────── */
+.share-section { background: #fff; padding: 80px 24px; }
+.share-inner { max-width: 860px; margin: 0 auto; }
+.share-head { text-align: center; margin-bottom: 40px; }
+.share-eyebrow { font-size: 11px; font-weight: 700; color: #c8813a; text-transform: uppercase; letter-spacing: .14em; margin-bottom: 12px; }
+.share-headline { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 44px); font-weight: 900; color: #1c1917; margin: 0 0 14px; line-height: 1.2; letter-spacing: -1px; }
+.share-headline em { font-style: normal; color: #c8813a; }
+.share-sub { font-size: 15px; color: #78716c; line-height: 1.65; margin: 0; max-width: 480px; margin: 0 auto; }
+
+.share-buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+.share-btn { display: flex; align-items: center; gap: 9px; padding: 12px 20px; border-radius: 12px; border: 1.5px solid #ede8e0; background: #faf7f2; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; color: #44403c; transition: all 0.18s; }
+.share-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+.share-btn-icon { display: flex; align-items: center; }
+.share-btn.whatsapp { border-color: #25d366; color: #128c7e; background: #f0fdf4; }
+.share-btn.whatsapp:hover { background: #25d366; color: #fff; border-color: #25d366; }
+.share-btn.twitter { border-color: #000; color: #000; }
+.share-btn.twitter:hover { background: #000; color: #fff; }
+.share-btn.facebook { border-color: #1877f2; color: #1877f2; background: #eff6ff; }
+.share-btn.facebook:hover { background: #1877f2; color: #fff; border-color: #1877f2; }
+.share-btn.tiktok { border-color: #ff0050; color: #ff0050; background: #fff0f3; }
+.share-btn.tiktok:hover { background: #ff0050; color: #fff; border-color: #ff0050; }
+.share-btn.native { border-color: #c8813a; color: #c8813a; background: rgba(200,129,58,0.06); }
+.share-btn.native:hover { background: #c8813a; color: #fff; }
+
+.copy-link-row { margin-bottom: 28px; }
+.copy-link-box { display: flex; align-items: center; background: #faf7f2; border: 1.5px solid #ede8e0; border-radius: 12px; padding: 4px 4px 4px 16px; max-width: 560px; margin: 0 auto; }
+.copy-link-url { flex: 1; font-size: 13px; color: #78716c; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.copy-link-btn { flex-shrink: 0; padding: 9px 18px; background: linear-gradient(135deg, #c8813a, #d4a060); color: #fff; border: none; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; min-width: 100px; transition: all 0.15s; }
+.copy-link-btn:hover { transform: translateY(-1px); }
+
+.referral-banner { display: flex; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(135deg, #1a0804, #2c1008); border-radius: 16px; padding: 22px 28px; margin-bottom: 32px; flex-wrap: wrap; }
+.referral-left { display: flex; align-items: flex-start; gap: 14px; }
+.referral-icon { font-size: 32px; flex-shrink: 0; }
+.referral-title { font-size: 16px; font-weight: 800; color: #fdf6ec; margin-bottom: 4px; }
+.referral-sub { font-size: 13px; color: #78716c; line-height: 1.6; }
+.referral-code { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+.referral-code span { font-size: 11px; color: #78716c; text-transform: uppercase; letter-spacing: .08em; }
+.referral-code strong { font-family: 'Playfair Display', serif; font-size: 24px; color: #d4a060; letter-spacing: .06em; }
+
+.share-stats { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; padding: 24px; background: #faf7f2; border-radius: 14px; }
+.share-stat { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.ss-val { font-size: 22px; font-weight: 900; color: #1c1917; font-family: 'Playfair Display', serif; }
+.ss-label { font-size: 11px; color: #78716c; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.ss-div { width: 1px; height: 36px; background: #ede8e0; }
 
 /* ── NEWSLETTER ─────────────────────────────────── */
 .nl-section {

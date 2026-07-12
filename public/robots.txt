@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://4ever-roastery.vercel.app/sitemap.xml
+
+# Disallow admin area from indexing
+Disallow: /login
+Disallow: /menu
+Disallow: /orders
+Disallow: /users
+Disallow: /analytics
+Disallow: /settings
+Disallow: /schedule
+Disallow: /promo-codes
+Disallow: /crm
+Disallow: /roastery-admin
