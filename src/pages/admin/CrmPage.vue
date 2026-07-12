@@ -53,6 +53,7 @@ const composeSubject = ref('')
 const composeTags    = ref<EmailTag[]>([])
 const composeSent    = ref(false)
 const composeSending = ref(false)
+const composeError   = ref('')
 const showPreview    = ref(false)
 
 const DEFAULT_SUBJECTS: Record<CampaignType, string> = {
@@ -81,12 +82,11 @@ async function sendCampaign() {
     ? crm.activeSubscribers.filter(s => composeTags.value.some(t => s.tags.includes(t)))
     : crm.activeSubscribers
 
-  crm.sendCampaign(composeType.value, subject, [...composeTags.value], code)
-
   composeSending.value = true
+  composeError.value   = ''
   showPreview.value = false
   try {
-    await fetch('/api/send-campaign', {
+    const res  = await fetch('/api/send-campaign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -96,10 +96,23 @@ async function sendCampaign() {
         promoCode: code,
       }),
     })
-  } catch { /* silent — campaign already saved in CRM store */ }
-  composeSending.value = false
-  composeSent.value = true
-  setTimeout(() => { composeSent.value = false; composeTags.value = [] }, 3500)
+    const data = await res.json().catch(() => ({}))
+
+    if (!res.ok || data.error) {
+      composeError.value = data.error || `Email service returned an error (HTTP ${res.status}).`
+    } else if (data.note) {
+      // API responded 200 but didn't actually send (e.g. RESEND_API_KEY not configured)
+      composeError.value = data.note
+    } else {
+      crm.sendCampaign(composeType.value, subject, [...composeTags.value], code)
+      composeSent.value = true
+      setTimeout(() => { composeSent.value = false; composeTags.value = [] }, 3500)
+    }
+  } catch (err: any) {
+    composeError.value = 'Could not reach the email service — check your connection and try again.'
+  } finally {
+    composeSending.value = false
+  }
 }
 
 // ── Email template generators ─────────────────────────────────
@@ -443,6 +456,13 @@ const ALL_TAGS: EmailTag[] = ['reviews', 'roastery', 'deals', 'discounts']
           </div>
         </div>
         <div v-else class="compose-layout">
+          <div v-if="composeError" class="error-banner">
+            <div class="error-icon">⚠</div>
+            <div>
+              <div class="error-title">Campaign not sent</div>
+              <div class="error-sub">{{ composeError }}</div>
+            </div>
+          </div>
           <!-- Type picker -->
           <div class="compose-section">
             <div class="compose-label">Campaign Type</div>
@@ -700,6 +720,11 @@ const ALL_TAGS: EmailTag[] = ['reviews', 'roastery', 'deals', 'discounts']
 .sent-icon { width: 52px; height: 52px; border-radius: 50%; background: #059669; color: #fff; font-size: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .sent-title { font-size: 18px; font-weight: 800; color: #059669; margin-bottom: 4px; }
 .sent-sub { font-size: 13px; color: #44403c; }
+
+.error-banner { display: flex; align-items: center; gap: 16px; background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25); border-radius: 14px; padding: 18px 22px; margin-bottom: 20px; }
+.error-icon { width: 40px; height: 40px; border-radius: 50%; background: #dc2626; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.error-title { font-size: 14px; font-weight: 800; color: #dc2626; margin-bottom: 2px; }
+.error-sub { font-size: 12px; color: #57534e; line-height: 1.5; }
 
 /* Campaigns */
 .campaigns-table-wrap { overflow-x: auto; }
