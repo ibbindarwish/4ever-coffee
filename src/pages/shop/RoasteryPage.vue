@@ -9,6 +9,13 @@ const cart    = useCartStore()
 const loyalty = useLoyaltyStore()
 const votes   = useRoasteryVotesStore()
 
+// Falls back to a gradient background if /videos/roastery-tour.mp4 hasn't been added yet.
+// Plain string constants (not static template attrs) so Vite treats them as public-root
+// URLs at runtime instead of trying to bundle them as build-time asset imports.
+const tourVideoSrc  = '/videos/roastery-tour.mp4'
+const tourPosterSrc = '/videos/roastery-tour-poster.jpg'
+const videoFailed = ref(false)
+
 type RoastLevel = 'Light' | 'Medium-Light' | 'Medium' | 'Medium-Dark' | 'Dark'
 type WeightOpt  = '250g' | '500g' | '1kg' | '5kg'
 
@@ -499,6 +506,25 @@ onUnmounted(() => clearInterval(coldBrewInterval))
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ── ROASTERY TOUR VIDEO ──────────────────────────────────── -->
+    <section class="tour-section">
+      <video
+        v-show="!videoFailed"
+        class="tour-video"
+        :src="tourVideoSrc"
+        :poster="tourPosterSrc"
+        autoplay muted loop playsinline
+        @error="videoFailed = true"
+      ></video>
+      <div class="tour-fallback" v-show="videoFailed"></div>
+      <div class="tour-overlay"></div>
+      <div class="tour-content">
+        <p class="section-eyebrow">Watch The Process</p>
+        <h2 class="tour-title">Inside Our Roastery</h2>
+        <p class="tour-sub">From green bean intake to hand-sealed bags — a look inside our Jumeirah roasting floor.</p>
       </div>
     </section>
 
@@ -1316,6 +1342,29 @@ onUnmounted(() => clearInterval(coldBrewInterval))
 .date-icon { font-size: 16px; }
 .date-key  { font-size: 10px; color: #78716c; text-transform: uppercase; letter-spacing: 0.06em; }
 .date-val  { font-size: 12px; font-weight: 700; color: #fdf6ec; }
+
+/* ── ROASTERY TOUR VIDEO ─────────────────────── */
+.tour-section {
+  position: relative; height: 480px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: #0d0603;
+}
+.tour-video, .tour-fallback {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+.tour-fallback {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(212,160,96,0.14) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(200,129,58,0.12) 0%, transparent 55%),
+    linear-gradient(135deg, #1a0a04 0%, #2c1008 50%, #1a0a04 100%);
+}
+.tour-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(13,6,3,0.35) 0%, rgba(13,6,3,0.65) 100%);
+}
+.tour-content { position: relative; z-index: 1; text-align: center; max-width: 560px; padding: 0 24px; }
+.tour-title { font-size: 34px; font-weight: 900; color: #fdf6ec; margin: 0 0 12px; letter-spacing: -0.5px; }
+.tour-sub   { font-size: 15px; color: #d4c4b0; line-height: 1.6; margin: 0; }
 
 /* ── BEAN SELECTOR ───────────────────────────── */
 .selector-section { padding: 72px 24px; background: #fff; }
