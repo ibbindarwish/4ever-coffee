@@ -176,11 +176,12 @@ const roasteryStore = useRoasteryStore()
 const crmStore = useCrmStore()
 
 // ── NEWSLETTER SIGNUP ─────────────────────────────────────────────────────────
-const nlName   = ref('')
-const nlEmail  = ref('')
-const nlTags   = ref<EmailTag[]>(['deals', 'discounts'])
-const nlSent   = ref(false)
-const nlError  = ref('')
+const nlName    = ref('')
+const nlEmail   = ref('')
+const nlTags    = ref<EmailTag[]>(['deals', 'discounts'])
+const nlSent    = ref(false)
+const nlError   = ref('')
+const nlSending = ref(false)
 
 const NL_TAGS: { key: EmailTag; label: string; icon: string }[] = [
   { key: 'deals',     label: 'New Deals',     icon: '🆕' },
@@ -195,12 +196,25 @@ function toggleNlTag(t: EmailTag) {
   else nlTags.value.splice(i, 1)
 }
 
-function submitNewsletter() {
+async function submitNewsletter() {
   nlError.value = ''
   if (!nlEmail.value.trim()) { nlError.value = 'Please enter your email address.'; return }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nlEmail.value)) { nlError.value = 'Please enter a valid email address.'; return }
   const tags = nlTags.value.length ? [...nlTags.value] : ['deals' as EmailTag]
-  crmStore.addSubscriber(nlName.value.trim() || 'Coffee Lover', nlEmail.value.trim(), tags)
+  const name = nlName.value.trim() || 'Coffee Lover'
+  const email = nlEmail.value.trim()
+
+  crmStore.addSubscriber(name, email, tags)
+
+  nlSending.value = true
+  try {
+    await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, tags }),
+    })
+  } catch { /* silent — CRM store still saved */ }
+  nlSending.value = false
   nlSent.value = true
 }
 
@@ -1236,8 +1250,8 @@ const weatherRec = computed(() => {
                 </div>
               </div>
               <div v-if="nlError" class="nl-err">{{ nlError }}</div>
-              <button class="nl-submit-btn" @click="submitNewsletter">
-                Subscribe Now →
+              <button class="nl-submit-btn" :disabled="nlSending" @click="submitNewsletter">
+                {{ nlSending ? 'Sending…' : 'Subscribe Now →' }}
               </button>
               <p class="nl-privacy">No spam, ever. Unsubscribe in one click at any time.</p>
             </div>

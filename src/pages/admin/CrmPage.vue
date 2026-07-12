@@ -52,6 +52,7 @@ const composeType    = ref<CampaignType>('customer-review')
 const composeSubject = ref('')
 const composeTags    = ref<EmailTag[]>([])
 const composeSent    = ref(false)
+const composeSending = ref(false)
 const showPreview    = ref(false)
 
 const DEFAULT_SUBJECTS: Record<CampaignType, string> = {
@@ -70,15 +71,35 @@ const recipientPreview = computed(() => {
   return pool.length
 })
 
-function sendCampaign() {
+async function sendCampaign() {
   const subject = composeSubject.value.trim() || DEFAULT_SUBJECTS[composeType.value]
   const code = composeType.value === 'discount'
     ? promo.activeCodes.filter(c => !c.staffRole)[0]?.code
     : undefined
+
+  const pool = composeTags.value.length
+    ? crm.activeSubscribers.filter(s => composeTags.value.some(t => s.tags.includes(t)))
+    : crm.activeSubscribers
+
   crm.sendCampaign(composeType.value, subject, [...composeTags.value], code)
-  composeSent.value = true
+
+  composeSending.value = true
   showPreview.value = false
-  setTimeout(() => { composeSent.value = false; composeTags.value = [] }, 3000)
+  try {
+    await fetch('/api/send-campaign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: composeType.value,
+        subject,
+        recipients: pool.map(s => ({ email: s.email, name: s.name })),
+        promoCode: code,
+      }),
+    })
+  } catch { /* silent — campaign already saved in CRM store */ }
+  composeSending.value = false
+  composeSent.value = true
+  setTimeout(() => { composeSent.value = false; composeTags.value = [] }, 3500)
 }
 
 // ── Email template generators ─────────────────────────────────
@@ -478,8 +499,8 @@ const ALL_TAGS: EmailTag[] = ['reviews', 'roastery', 'deals', 'discounts']
           </div>
 
           <div class="compose-send-row">
-            <button class="send-btn" @click="sendCampaign">
-              Send Campaign to {{ recipientPreview }} Subscriber{{ recipientPreview !== 1 ? 's' : '' }} →
+            <button class="send-btn" :disabled="composeSending" @click="sendCampaign">
+              {{ composeSending ? 'Sending emails…' : `Send Campaign to ${recipientPreview} Subscriber${recipientPreview !== 1 ? 's' : ''} →` }}
             </button>
           </div>
         </div>
