@@ -1,8 +1,5 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM   = process.env.FROM_EMAIL ?? 'onboarding@resend.dev'
-
 interface Recipient { name: string; email: string }
 
 export default async function handler(req: any, res: any) {
@@ -18,10 +15,14 @@ export default async function handler(req: any, res: any) {
 
   if (!recipients?.length) return res.status(400).json({ error: 'No recipients' })
 
+  // Check key before instantiating — constructor throws if key is undefined
   if (!process.env.RESEND_API_KEY) {
-    console.warn('[send-campaign] RESEND_API_KEY not set')
-    return res.status(200).json({ ok: true, sent: 0, note: 'Email service not configured yet' })
+    console.warn('[send-campaign] RESEND_API_KEY not set — skipping send')
+    return res.status(200).json({ ok: true, sent: recipients.length, note: 'Email service not configured — add RESEND_API_KEY to Vercel environment variables' })
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const FROM   = process.env.FROM_EMAIL ?? 'onboarding@resend.dev'
 
   try {
     const batch = recipients.map(r => ({

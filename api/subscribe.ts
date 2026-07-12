@@ -1,8 +1,5 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-const FROM   = process.env.FROM_EMAIL ?? 'onboarding@resend.dev'
-
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS')
@@ -13,10 +10,14 @@ export default async function handler(req: any, res: any) {
   const { name, email, tags } = req.body as { name: string; email: string; tags: string[] }
   if (!email) return res.status(400).json({ error: 'Email is required' })
 
+  // Check key before instantiating — constructor throws if key is undefined
   if (!process.env.RESEND_API_KEY) {
     console.warn('[subscribe] RESEND_API_KEY not set — skipping email delivery')
-    return res.status(200).json({ ok: true, note: 'Email service not configured yet' })
+    return res.status(200).json({ ok: true, note: 'Email service not configured — add RESEND_API_KEY to Vercel environment variables' })
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const FROM   = process.env.FROM_EMAIL ?? 'onboarding@resend.dev'
 
   try {
     const { error } = await resend.emails.send({
