@@ -17,11 +17,11 @@
     "@capacitor/cli": "^8.4.2",
     "@capacitor/core": "^8.4.2",
     "@capacitor/ios": "^8.4.2",
-    "pinia": "^3.0.4",
+    "pinia": "^4.0.2",
     "resend": "^6.18.1",
     "three": "^0.185.1",
     "vue": "^3.5.40",
-    "vue-router": "^4.6.4"
+    "vue-router": "^5.2.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
