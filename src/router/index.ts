@@ -42,11 +42,11 @@ const router = createRouter({
         { path: '', name: 'shop-home', component: () => import('../pages/shop/ShopHomePage.vue') },
         { path: 'menu', name: 'shop-menu', component: () => import('../pages/shop/ShopPage.vue') },
         { path: 'cart', name: 'cart', component: () => import('../pages/shop/CartPage.vue') },
-        { path: 'checkout', name: 'checkout', component: () => import('../pages/shop/CheckoutPage.vue') },
-        { path: 'payment',  name: 'payment',  component: () => import('../pages/shop/PaymentPage.vue') },
+        { path: 'checkout', name: 'checkout', component: () => import('../pages/shop/CheckoutPage.vue'), meta: { requiresCustomer: true } },
+        { path: 'payment',  name: 'payment',  component: () => import('../pages/shop/PaymentPage.vue'), meta: { requiresCustomer: true } },
         { path: 'success',  name: 'success',  component: () => import('../pages/shop/SuccessPage.vue') },
-        { path: 'track',    name: 'track',    component: () => import('../pages/shop/OrderTrackPage.vue') },
-        { path: 'loyalty',     name: 'loyalty',     component: () => import('../pages/shop/LoyaltyPage.vue') },
+        { path: 'track',    name: 'track',    component: () => import('../pages/shop/OrderTrackPage.vue'), meta: { requiresCustomer: true } },
+        { path: 'loyalty',     name: 'loyalty',     component: () => import('../pages/shop/LoyaltyPage.vue'), meta: { requiresCustomer: true } },
         { path: 'reservation', name: 'reservation', component: () => import('../pages/shop/ReservationPage.vue') },
         { path: 'roastery',    name: 'roastery',    component: () => import('../pages/shop/RoasteryPage.vue') },
         { path: 'signup',           name: 'signup',             component: () => import('../pages/shop/SignupPage.vue') },
@@ -72,8 +72,15 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  const { useAuthStore } = await import('../stores/auth')
-  const auth = useAuthStore()
+  const { useAuthStore }         = await import('../stores/auth')
+  const { useCustomerAuthStore } = await import('../stores/customerAuth')
+  const auth         = useAuthStore()
+  const customerAuth = useCustomerAuthStore()
+
+  // Supabase session restoration is async — hydrate once before guarding so
+  // isAuthenticated/isLoggedIn reflect an already-logged-in user on refresh.
+  await auth.hydrate()
+  await customerAuth.hydrate()
 
   if (to.meta.requiresAuth) {
     if (!auth.isAuthenticated) return { path: '/login' }
@@ -81,6 +88,10 @@ router.beforeEach(async (to) => {
   }
   if (to.meta.adminOnly && auth.user?.role !== 'Admin') return { path: '/' }
   if (to.path === '/login' && auth.isAuthenticated) return { path: '/' }
+
+  if (to.meta.requiresCustomer && !customerAuth.isLoggedIn) {
+    return { path: '/shop/login', query: { redirect: to.fullPath } }
+  }
 })
 
 export default router

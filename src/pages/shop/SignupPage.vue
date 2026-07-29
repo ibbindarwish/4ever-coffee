@@ -91,8 +91,7 @@ async function handleSignup() {
   if (!canSubmit.value) return
   loading.value = true
   error.value   = ''
-  await new Promise(r => setTimeout(r, 500))
-  const result = auth.register(name.value, username.value, email.value, phone.value, password.value)
+  const result = await auth.register(name.value, username.value, email.value, phone.value, password.value)
   loading.value = false
   if (result.success) {
     router.push('/shop')

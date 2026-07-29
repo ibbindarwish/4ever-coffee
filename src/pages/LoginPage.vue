@@ -37,8 +37,7 @@ async function handleLogin() {
   if (!canSubmit.value) return
   loading.value = true
   error.value   = ''
-  await new Promise(r => setTimeout(r, 600))
-  const result = auth.login(email.value, password.value)
+  const result = await auth.login(email.value, password.value)
   loading.value = false
   if (result.success) {
     router.push('/')

@@ -1,30 +1,80 @@
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { RouterLink } from 'vue-router'
+import { useOrdersStore } from '../../stores/orders'
+
 const route = useRoute()
-const orderId = route.query.id as string
+const orders = useOrdersStore()
+
+const paymentIntentId = route.query.payment_intent as string | undefined
+const orderId = ref<string | null>(null)
+const stillProcessing = ref(true)
+const failed = ref(false)
+
+const MAX_ATTEMPTS = 10
+const POLL_MS = 1500
+let attempts = 0
+let timer: ReturnType<typeof setTimeout>
+
+async function poll() {
+  if (!paymentIntentId) { failed.value = true; stillProcessing.value = false; return }
+
+  const order = await orders.fetchOrderByPaymentIntent(paymentIntentId)
+  if (order) {
+    orderId.value = order.id
+    stillProcessing.value = false
+    return
+  }
+
+  attempts++
+  if (attempts >= MAX_ATTEMPTS) {
+    stillProcessing.value = false
+    return
+  }
+  timer = setTimeout(poll, POLL_MS)
+}
+
+onMounted(poll)
+onUnmounted(() => clearTimeout(timer))
 </script>
 
 <template>
   <div class="success-page">
     <div class="success-card">
-      <div class="success-icon">☕</div>
-      <h1>Order Placed!</h1>
-      <p class="order-id">Order <strong>{{ orderId }}</strong></p>
-      <p class="message">Thank you for choosing 4ever Coffee! Your drink is being prepared and will be on its way soon.</p>
-      <div class="steps">
-        <div class="step done">✓ Order Received</div>
-        <div class="step-arrow">→</div>
-        <div class="step active">☕ Preparing</div>
-        <div class="step-arrow">→</div>
-        <div class="step">🚴 On the Way</div>
-        <div class="step-arrow">→</div>
-        <div class="step">✓ Delivered</div>
-      </div>
-      <div class="actions">
-        <RouterLink :to="{ name: 'track', query: { id: orderId } }" class="btn-primary">Track My Order →</RouterLink>
-        <RouterLink to="/shop/menu" class="btn-ghost">Order More</RouterLink>
-      </div>
+      <template v-if="stillProcessing">
+        <div class="success-icon spin">☕</div>
+        <h1>Confirming your order…</h1>
+        <p class="message">Your payment went through — we're just finishing setting up your order. This takes a few seconds.</p>
+      </template>
+
+      <template v-else-if="orderId">
+        <div class="success-icon">☕</div>
+        <h1>Order Placed!</h1>
+        <p class="order-id">Order <strong>{{ orderId }}</strong></p>
+        <p class="message">Thank you for choosing 4ever Coffee! Your drink is being prepared and will be on its way soon.</p>
+        <div class="steps">
+          <div class="step done">✓ Order Received</div>
+          <div class="step-arrow">→</div>
+          <div class="step active">☕ Preparing</div>
+          <div class="step-arrow">→</div>
+          <div class="step">🚴 On the Way</div>
+          <div class="step-arrow">→</div>
+          <div class="step">✓ Delivered</div>
+        </div>
+        <div class="actions">
+          <RouterLink :to="{ name: 'track', query: { id: orderId } }" class="btn-primary">Track My Order →</RouterLink>
+          <RouterLink to="/shop/menu" class="btn-ghost">Order More</RouterLink>
+        </div>
+      </template>
+
+      <template v-else>
+        <div class="success-icon">⚠</div>
+        <h1>Payment received, order still processing</h1>
+        <p class="message">Your payment was successful, but your order is taking longer than expected to appear. It will be ready shortly — check your email confirmation, or contact us if this persists.</p>
+        <div class="actions">
+          <RouterLink to="/shop/menu" class="btn-ghost">Back to Menu</RouterLink>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -33,6 +83,8 @@ const orderId = route.query.id as string
 .success-page { min-height: 80vh; display: flex; align-items: center; justify-content: center; background: #faf7f2; padding: 40px 24px; }
 .success-card { background: #fff; border-radius: 20px; padding: 48px 40px; max-width: 540px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(44,16,8,0.1); border: 1px solid #f0ebe4; }
 .success-icon { font-size: 64px; margin-bottom: 16px; }
+.success-icon.spin { animation: spin 2s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 h1 { font-size: 28px; font-weight: 900; color: #1c1917; margin-bottom: 8px; }
 .order-id { font-size: 14px; color: #a8a29e; margin-bottom: 12px; }
 .order-id strong { color: #d4a060; font-weight: 700; }

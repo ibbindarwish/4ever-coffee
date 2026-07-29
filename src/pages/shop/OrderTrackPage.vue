@@ -36,10 +36,11 @@ const eta = computed(() => {
   return etaMap[order.value.status] ?? ''
 })
 
-function search() {
+async function search() {
   notFound.value = false
   order.value = null
   if (!query.value.trim()) return
+  await store.fetchOrders()
   const found = store.findById(query.value)
   if (found) { order.value = found }
   else { notFound.value = true }
@@ -49,8 +50,9 @@ let refreshTimer: ReturnType<typeof setInterval>
 
 onMounted(() => {
   if (query.value) search()
-  refreshTimer = setInterval(() => {
+  refreshTimer = setInterval(async () => {
     if (order.value) {
+      await store.fetchOrders()
       const fresh = store.findById(order.value.id)
       if (fresh) order.value = fresh
     }
