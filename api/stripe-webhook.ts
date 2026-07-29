@@ -1,4 +1,3 @@
-import { buffer } from 'node:stream/consumers'
 import { stripe } from './_lib/stripe.js'
 import { supabaseAdmin } from './_lib/supabaseAdmin.js'
 import { SIZE_PRICE, type CupSize } from './_lib/pricing.js'
@@ -19,6 +18,15 @@ function genOrderId(): string {
   return `ORD-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`.toUpperCase()
 }
 
+function getRawBody(req: any): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = []
+    req.on('data', (chunk: Buffer) => chunks.push(chunk))
+    req.on('end', () => resolve(Buffer.concat(chunks)))
+    req.on('error', reject)
+  })
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
@@ -26,7 +34,7 @@ export default async function handler(req: any, res: any) {
   let event: any
 
   try {
-    const rawBody = await buffer(req)
+    const rawBody = await getRawBody(req)
     event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET as string)
   } catch (err: any) {
     console.error('[stripe-webhook] signature verification failed:', err.message)
