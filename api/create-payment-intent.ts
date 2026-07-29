@@ -1,6 +1,6 @@
-import { supabaseAdmin } from './_lib/supabaseAdmin'
-import { stripe } from './_lib/stripe'
-import { calcTotals, type CartItemInput } from './_lib/pricing'
+import { supabaseAdmin } from './_lib/supabaseAdmin.js'
+import { stripe } from './_lib/stripe.js'
+import { calcTotals, type CartItemInput } from './_lib/pricing.js'
 
 interface DeliveryInput {
   name: string; email: string; phone: string

@@ -1,7 +1,7 @@
 import { buffer } from 'node:stream/consumers'
-import { stripe } from './_lib/stripe'
-import { supabaseAdmin } from './_lib/supabaseAdmin'
-import { SIZE_PRICE, type CupSize } from './_lib/pricing'
+import { stripe } from './_lib/stripe.js'
+import { supabaseAdmin } from './_lib/supabaseAdmin.js'
+import { SIZE_PRICE, type CupSize } from './_lib/pricing.js'
 
 // Stripe needs the raw request body to verify the signature — disable Vercel's
 // default JSON body parsing for this route only.
