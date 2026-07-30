@@ -1,6 +1,7 @@
 import { stripe } from './_lib/stripe.js'
 import { supabaseAdmin } from './_lib/supabaseAdmin.js'
 import { SIZE_PRICE, type CupSize } from './_lib/pricing.js'
+import { alertAdmin } from './_lib/alertAdmin.js'
 
 // Stripe needs the raw request body to verify the signature — disable Vercel's
 // default JSON body parsing for this route only.
@@ -106,6 +107,12 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({ received: true, orderId })
   } catch (err: any) {
     console.error('[stripe-webhook] processing failed:', err)
+    // A payment succeeded but the order failed to be recorded — a customer
+    // may have paid with nothing to show for it. Worth waking someone up.
+    await alertAdmin(
+      'Payment succeeded but order creation failed',
+      `Payment Intent: ${pi.id}\nAmount: ${pi.amount / 100} ${pi.currency}\nError: ${err?.message ?? String(err)}\n\nThis customer paid but has no order — check Stripe and create the order manually.`,
+    )
     return res.status(500).json({ error: 'Webhook processing failed' })
   }
 }

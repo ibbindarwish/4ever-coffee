@@ -60,6 +60,9 @@ const router = createRouter({
         { path: 'waiting-room',     name: 'waiting-room',       component: () => import('../pages/shop/WaitingRoomPage.vue') },
         { path: 'decaf-confessions',name: 'decaf-confessions',  component: () => import('../pages/shop/DecafConfessionsPage.vue') },
         { path: 'refer',            name: 'refer',              component: () => import('../pages/shop/ReferralPage.vue'), meta: { public: true } },
+        { path: 'privacy-policy',   name: 'privacy-policy',    component: () => import('../pages/shop/PrivacyPolicyPage.vue') },
+        { path: 'terms',            name: 'terms',              component: () => import('../pages/shop/TermsOfServicePage.vue') },
+        { path: 'refund-policy',    name: 'refund-policy',      component: () => import('../pages/shop/RefundPolicyPage.vue') },
       ],
     },
     {

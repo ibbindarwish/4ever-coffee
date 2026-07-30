@@ -228,7 +228,7 @@ async function submitNewsletter() {
   const name = nlName.value.trim() || 'Coffee Lover'
   const email = nlEmail.value.trim()
 
-  crmStore.addSubscriber(name, email, tags)
+  await crmStore.addSubscriber(name, email, tags)
 
   nlSending.value = true
   try {

@@ -263,9 +263,9 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
           <h4>Rewards & Help</h4>
           <RouterLink to="/shop/loyalty">Loyalty Programme</RouterLink>
           <RouterLink to="/shop/gift">Gift Experiences</RouterLink>
-          <a href="#">Delivery Policy</a>
+          <RouterLink to="/shop/refund-policy">Delivery Policy</RouterLink>
           <a href="#">Allergen Information</a>
-          <a href="#">Privacy Policy</a>
+          <RouterLink to="/shop/privacy-policy">Privacy Policy</RouterLink>
         </div>
 
         <div class="footer-links">
@@ -292,9 +292,9 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
       <div class="footer-bottom">
         <span>© 2026 4ever Coffee Ltd. All rights reserved. London, UK.</span>
         <div class="footer-bottom-links">
-          <a href="#">Privacy</a>
-          <a href="#">Terms</a>
-          <a href="#">Cookies</a>
+          <RouterLink to="/shop/privacy-policy">Privacy</RouterLink>
+          <RouterLink to="/shop/terms">Terms</RouterLink>
+          <RouterLink to="/shop/privacy-policy">Cookies</RouterLink>
         </div>
       </div>
     </footer>

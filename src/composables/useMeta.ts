@@ -65,6 +65,18 @@ const META: Record<string, { title: string; description: string; path?: string }
     title: 'Checkout — 4ever Coffee',
     description: 'Complete your 4ever Coffee order. Secure checkout, fast delivery, satisfaction guaranteed.',
   },
+  'privacy-policy': {
+    title: 'Privacy Policy — 4ever Coffee',
+    description: 'How 4ever Coffee collects, uses, and protects your personal data.',
+  },
+  'terms': {
+    title: 'Terms of Service — 4ever Coffee',
+    description: 'The terms governing your use of the 4ever Coffee website and ordering service.',
+  },
+  'refund-policy': {
+    title: 'Refund & Delivery Policy — 4ever Coffee',
+    description: 'Our delivery windows, refund process, and cancellation policy.',
+  },
 }
 
 function setMeta(key: 'property' | 'name', attr: string, content: string) {

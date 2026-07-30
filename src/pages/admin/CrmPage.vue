@@ -36,11 +36,11 @@ function toggleAddTag(t: EmailTag) {
   else addTags.value.splice(i, 1)
 }
 
-function submitAdd() {
+async function submitAdd() {
   addError.value = ''
   if (!addName.value.trim() || !addEmail.value.trim()) { addError.value = 'Name and email are required.'; return }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addEmail.value)) { addError.value = 'Enter a valid email address.'; return }
-  const ok = crm.addSubscriber(addName.value.trim(), addEmail.value.trim(), addTags.value.length ? [...addTags.value] : ['deals'])
+  const ok = await crm.addSubscriber(addName.value.trim(), addEmail.value.trim(), addTags.value.length ? [...addTags.value] : ['deals'])
   if (!ok) { addError.value = 'This email is already subscribed.'; return }
   addOk.value = true
   setTimeout(() => { showAdd.value = false; addOk.value = false; addName.value = ''; addEmail.value = ''; addTags.value = ['deals'] }, 1600)
@@ -155,7 +155,7 @@ async function sendCampaign() {
     if (totalSent === 0) {
       composeError.value = firstError || 'No emails were sent.'
     } else {
-      crm.sendCampaign(composeType.value, subject, [...composeTags.value], code)
+      await crm.sendCampaign(composeType.value, subject, [...composeTags.value], code)
       composeSent.value = true
       if (totalFailed > 0) {
         composePartial.value = `${totalFailed} of ${pool.length} subscribers couldn't be reached${firstError ? ` (${firstError})` : ''}.`

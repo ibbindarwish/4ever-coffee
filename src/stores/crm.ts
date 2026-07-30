@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { supabase } from '../lib/supabase'
 
 export type EmailTag = 'reviews' | 'roastery' | 'deals' | 'discounts'
 
@@ -23,44 +24,42 @@ export interface Campaign {
   promoCode?: string
 }
 
-const SEED_SUBSCRIBERS: Subscriber[] = [
-  { id: 's1',  name: 'Sarah Mitchell',    email: 'sarah.m@gmail.com',    joinedAt: '2026-05-10', tags: ['reviews', 'deals', 'discounts'],              active: true  },
-  { id: 's2',  name: 'James Thornton',    email: 'james.t@outlook.com',  joinedAt: '2026-05-15', tags: ['roastery', 'deals'],                          active: true  },
-  { id: 's3',  name: 'Nour Al-Hassan',   email: 'nour.h@gmail.com',     joinedAt: '2026-05-20', tags: ['reviews', 'roastery', 'deals', 'discounts'],   active: true  },
-  { id: 's4',  name: 'Tom Bradley',       email: 'tom.b@hotmail.com',    joinedAt: '2026-05-25', tags: ['discounts'],                                  active: true  },
-  { id: 's5',  name: 'Layla Hassan',      email: 'layla.h@gmail.com',    joinedAt: '2026-06-01', tags: ['reviews', 'roastery'],                        active: true  },
-  { id: 's6',  name: 'Ahmed Said',        email: 'ahmed.s@gmail.com',    joinedAt: '2026-06-05', tags: ['deals', 'discounts'],                         active: true  },
-  { id: 's7',  name: 'Priya Nair',        email: 'priya.n@yahoo.com',    joinedAt: '2026-06-10', tags: ['reviews', 'deals'],                           active: true  },
-  { id: 's8',  name: 'Carlos Reyes',      email: 'carlos.r@gmail.com',   joinedAt: '2026-06-15', tags: ['roastery', 'discounts'],                      active: true  },
-  { id: 's9',  name: 'Emma Watson',       email: 'emma.w@example.com',   joinedAt: '2026-06-20', tags: ['reviews', 'deals', 'discounts'],              active: false },
-  { id: 's10', name: 'David Chen',        email: 'david.c@gmail.com',    joinedAt: '2026-06-25', tags: ['roastery', 'deals'],                          active: true  },
-  { id: 's11', name: 'Fatima Al-Zahraa', email: 'fatima.z@outlook.com', joinedAt: '2026-07-01', tags: ['reviews', 'roastery', 'discounts'],           active: true  },
-  { id: 's12', name: 'Oliver Smith',      email: 'oliver.s@gmail.com',   joinedAt: '2026-07-05', tags: ['deals', 'discounts'],                         active: true  },
-  { id: 's13', name: 'Aisha Rahman',      email: 'aisha.r@gmail.com',    joinedAt: '2026-07-07', tags: ['reviews', 'roastery', 'deals', 'discounts'],  active: true  },
-  { id: 's14', name: 'Luke Harrison',     email: 'luke.h@icloud.com',    joinedAt: '2026-07-09', tags: ['deals', 'roastery'],                          active: true  },
-]
+interface SubscriberRow {
+  id: string; name: string; email: string; tags: EmailTag[]; active: boolean; joined_at: string
+}
+interface CampaignRow {
+  id: string; type: Campaign['type']; subject: string; promo_code: string | null
+  recipient_count: number; opens: number; clicks: number; sent_at: string
+}
 
-const SEED_CAMPAIGNS: Campaign[] = [
-  { id: 'c1', type: 'discount',        subject: '☕ 20% Off This Weekend — Exclusively For You',         sentAt: '2026-06-15T10:00:00', recipientCount: 10, opens: 7, clicks: 4, promoCode: 'SAVE20'   },
-  { id: 'c2', type: 'roastery-update', subject: '🌍 New Ethiopian Lot Just Arrived at the Roastery',     sentAt: '2026-06-22T09:00:00', recipientCount: 8,  opens: 6, clicks: 3                        },
-  { id: 'c3', type: 'customer-review', subject: '⭐ Our Customers Love Us — See What They\'re Saying',   sentAt: '2026-07-01T11:00:00', recipientCount: 12, opens: 9, clicks: 5                        },
-  { id: 'c4', type: 'new-deals',       subject: '🆕 New Summer Menu Just Dropped',                       sentAt: '2026-07-08T10:00:00', recipientCount: 11, opens: 8, clicks: 6                        },
-]
-
-const LS_KEY = '4ever_crm'
-
-function loadSaved() {
-  try {
-    const raw = localStorage.getItem(LS_KEY)
-    if (raw) return JSON.parse(raw) as { subscribers: Subscriber[]; campaigns: Campaign[] }
-  } catch { /* ignore */ }
-  return null
+function subscriberFromRow(r: SubscriberRow): Subscriber {
+  return { id: r.id, name: r.name, email: r.email, tags: r.tags, active: r.active, joinedAt: r.joined_at.split('T')[0] }
+}
+function campaignFromRow(r: CampaignRow): Campaign {
+  return {
+    id: r.id, type: r.type, subject: r.subject, promoCode: r.promo_code ?? undefined,
+    recipientCount: r.recipient_count, opens: r.opens, clicks: r.clicks, sentAt: r.sent_at,
+  }
 }
 
 export const useCrmStore = defineStore('crm', () => {
-  const saved = loadSaved()
-  const subscribers = ref<Subscriber[]>(saved?.subscribers ?? [...SEED_SUBSCRIBERS])
-  const campaigns   = ref<Campaign[]>(saved?.campaigns   ?? [...SEED_CAMPAIGNS])
+  const subscribers = ref<Subscriber[]>([])
+  const campaigns   = ref<Campaign[]>([])
+  const loaded      = ref(false)
+
+  // Staff-only reads (RLS) — silently empty for anonymous storefront visitors,
+  // which is fine since they never display this list, only add themselves to it.
+  async function fetchSubscribers() {
+    const { data, error } = await supabase.from('subscribers').select('*').order('joined_at', { ascending: false })
+    if (error) { console.error('[crm] fetchSubscribers failed:', error.message); return }
+    subscribers.value = (data as SubscriberRow[]).map(subscriberFromRow)
+  }
+
+  async function fetchCampaigns() {
+    const { data, error } = await supabase.from('campaigns').select('*').order('sent_at', { ascending: false })
+    if (error) { console.error('[crm] fetchCampaigns failed:', error.message); return }
+    campaigns.value = (data as CampaignRow[]).map(campaignFromRow)
+  }
 
   const activeSubscribers = computed(() => subscribers.value.filter(s => s.active))
   const totalSubscribers  = computed(() => subscribers.value.length)
@@ -75,49 +74,58 @@ export const useCrmStore = defineStore('crm', () => {
     return activeSubscribers.value.filter(s => s.tags.includes(tag)).length
   }
 
-  function addSubscriber(name: string, email: string, tags: EmailTag[]): boolean {
-    if (subscribers.value.some(s => s.email.toLowerCase() === email.toLowerCase())) return false
-    subscribers.value.push({
-      id: crypto.randomUUID(), name, email, tags,
-      joinedAt: new Date().toISOString().split('T')[0],
-      active: true,
-    })
-    persist()
+  async function addSubscriber(name: string, email: string, tags: EmailTag[]): Promise<boolean> {
+    const { error } = await supabase.from('subscribers').insert({ name, email, tags, active: true })
+    if (error) {
+      if (error.code !== '23505') console.error('[crm] addSubscriber failed:', error.message)
+      return false // duplicate email (23505) or any other failure
+    }
+    await fetchSubscribers() // no-op for anonymous callers — RLS hides the list from them
     return true
   }
 
-  function removeSubscriber(id: string) {
+  async function removeSubscriber(id: string) {
+    const { error } = await supabase.from('subscribers').delete().eq('id', id)
+    if (error) { console.error('[crm] removeSubscriber failed:', error.message); return }
     subscribers.value = subscribers.value.filter(s => s.id !== id)
-    persist()
   }
 
-  function toggleSubscriber(id: string) {
+  async function toggleSubscriber(id: string) {
     const s = subscribers.value.find(s => s.id === id)
-    if (s) { s.active = !s.active; persist() }
+    if (!s) return
+    const { error } = await supabase.from('subscribers').update({ active: !s.active }).eq('id', id)
+    if (error) { console.error('[crm] toggleSubscriber failed:', error.message); return }
+    s.active = !s.active
   }
 
-  function sendCampaign(type: Campaign['type'], subject: string, tags: EmailTag[], promoCode?: string) {
+  // Open/click counts remain simulated placeholder engagement numbers — real
+  // tracking would need pixel/link-click infrastructure, out of scope here.
+  // What's real now is that the campaign history itself persists centrally.
+  async function sendCampaign(type: Campaign['type'], subject: string, tags: EmailTag[], promoCode?: string) {
     const pool = tags.length
       ? activeSubscribers.value.filter(s => tags.some(t => s.tags.includes(t)))
       : activeSubscribers.value
     const recipientCount = pool.length
-    campaigns.value.unshift({
-      id: crypto.randomUUID(), type, subject, promoCode,
-      sentAt: new Date().toISOString(),
-      recipientCount,
-      opens:  Math.floor(recipientCount * (0.52 + Math.random() * 0.28)),
-      clicks: Math.floor(recipientCount * (0.22 + Math.random() * 0.22)),
+    const opens  = Math.floor(recipientCount * (0.52 + Math.random() * 0.28))
+    const clicks = Math.floor(recipientCount * (0.22 + Math.random() * 0.22))
+
+    const { error } = await supabase.from('campaigns').insert({
+      type, subject, promo_code: promoCode ?? null, recipient_count: recipientCount, opens, clicks,
     })
-    persist()
+    if (error) { console.error('[crm] sendCampaign failed:', error.message); return }
+    await fetchCampaigns()
   }
 
-  function persist() {
-    try { localStorage.setItem(LS_KEY, JSON.stringify({ subscribers: subscribers.value, campaigns: campaigns.value })) } catch { /* ignore */ }
+  if (!loaded.value) {
+    loaded.value = true
+    fetchSubscribers()
+    fetchCampaigns()
   }
 
   return {
     subscribers, campaigns, activeSubscribers,
     totalSubscribers, totalActive, avgOpenRate,
     tagCount, addSubscriber, removeSubscriber, toggleSubscriber, sendCampaign,
+    fetchSubscribers, fetchCampaigns,
   }
 })
